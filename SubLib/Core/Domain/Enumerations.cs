@@ -153,5 +153,4 @@ namespace SubLib.Core.Domain
         /// <summary>Time and Frame based timing mode.</summary>
         Both
     };
-
 }

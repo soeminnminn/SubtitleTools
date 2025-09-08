@@ -17,102 +17,87 @@ namespace SubtitleTools
 
         public string FileExtension { get; set; } = ".sub";
 
-        public bool Parse(Stream stream, out Subtitle result)
+        public bool IsSupported(string input)
         {
-            var subStream = new StreamReader(stream).BaseStream;
-            subStream.Position = 0;
-            var reader = new StreamReader(subStream, true);
-
-            var firstLine = reader.ReadLine();
-            if (firstLine == FirstLine)
-            {
-                var line = reader.ReadLine();
-                var lineNumber = 2;
-                while (line != null && lineNumber <= MaxLineNumberForItems && !IsTimestampLine(line))
-                {
-                    line = reader.ReadLine();
-                    lineNumber++;
-                }
-
-                if (line != null && lineNumber <= MaxLineNumberForItems && IsTimestampLine(line))
-                {
-                    var items = new List<Dialogue>();
-
-                    var timeCodeLine = line;
-                    var textLines = new List<string>();
-
-                    while (line != null)
-                    {
-                        line = reader.ReadLine();
-                        if (IsTimestampLine(line))
-                        {
-                            var timeCodes = ParseTimecodeLine(timeCodeLine);
-                            var start = timeCodes.Item1;
-                            var end = timeCodes.Item2;
-
-                            if (start > 0 && end > 0 && textLines.Any())
-                            {
-                                items.Add(new Dialogue($"{items.Count + 1}", start, end, ConvertString(string.Join("\r\n", textLines.ToArray()))));
-                            }
-
-                            timeCodeLine = line;
-                            textLines = new List<string>();
-                        }
-                        else
-                        {
-                            if (!string.IsNullOrEmpty(line))
-                            {
-                                textLines.Add(line);
-                            }
-                        }
-                    }
-
-                    var lastTimeCodes = ParseTimecodeLine(timeCodeLine);
-                    var lastStart = lastTimeCodes.Item1;
-                    var lastEnd = lastTimeCodes.Item2;
-                    if (lastStart > 0 && lastEnd > 0 && textLines.Any())
-                    {
-                        items.Add(new Dialogue($"{items.Count + 1}", lastStart, lastEnd, ConvertString(string.Join("\r\n", textLines.ToArray()))));
-                    }
-
-                    if (items.Any())
-                    {
-                        result = Utils.RemoveDuplicateItems(items);
-                        return true;
-                    }
-
-                    result = null;
-                    return false;
-                }
-
-                result = null;
-                return false;
-            }
-
-            result = null;
-            return false;
+            if (string.IsNullOrEmpty(input)) return false;
+            input = input.Trim();
+            return input.StartsWith(FirstLine);
         }
 
-        private string ConvertString(string str)
+        public bool Parse(string input, ref ISubtitle result)
         {
-            str = str.Replace("[br]", "\r\n");
-            str = str.Replace("[BR]", "\r\n");
-
-            try
+            using (var reader = new StringReader(input))
             {
-                while (str.IndexOf("<", StringComparison.Ordinal) != -1)
+                var firstLine = reader.ReadLine();
+                if (firstLine == FirstLine)
                 {
-                    var i = str.IndexOf("<", StringComparison.Ordinal);
-                    var j = str.IndexOf(">", StringComparison.Ordinal);
-                    str = str.Remove(i, j - i + 1);
-                }
+                    var line = reader.ReadLine();
+                    var lineNumber = 2;
+                    while (line != null && lineNumber <= MaxLineNumberForItems && !IsTimestampLine(line))
+                    {
+                        line = reader.ReadLine();
+                        lineNumber++;
+                    }
 
-                return str;
+                    if (line != null && lineNumber <= MaxLineNumberForItems && IsTimestampLine(line))
+                    {
+                        var items = new List<Dialogue>();
+
+                        var timeCodeLine = line;
+                        var textLines = new List<string>();
+
+                        while (line != null)
+                        {
+                            line = reader.ReadLine();
+                            if (IsTimestampLine(line))
+                            {
+                                var timeCodes = ParseTimecodeLine(timeCodeLine);
+                                var start = timeCodes.Item1;
+                                var end = timeCodes.Item2;
+
+                                if (start > 0 && end > 0 && textLines.Any())
+                                {
+                                    items.Add(new Dialogue($"{items.Count + 1}", start, end, string.Join("\r\n", textLines.ToArray()).Trim()));
+                                }
+
+                                timeCodeLine = line;
+                                textLines = new List<string>();
+                            }
+                            else
+                            {
+                                if (!string.IsNullOrEmpty(line))
+                                {
+                                    textLines.Add(line);
+                                }
+                            }
+                        }
+
+                        var lastTimeCodes = ParseTimecodeLine(timeCodeLine);
+                        var lastStart = lastTimeCodes.Item1;
+                        var lastEnd = lastTimeCodes.Item2;
+                        if (lastStart > 0 && lastEnd > 0 && textLines.Any())
+                        {
+                            items.Add(new Dialogue($"{items.Count + 1}", lastStart, lastEnd, string.Join("\r\n", textLines.ToArray()).Trim()));
+                        }
+
+                        if (items.Any())
+                        {
+                            var list = Utils.RemoveDuplicateItems(items);
+                            foreach (var d in list)
+                            {
+                                result.Add(d);
+                            }
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    return false;
+                }
             }
-            catch
-            {
-                return str;
-            }
+
+            return false;
         }
 
         private Tuple<int, int> ParseTimecodeLine(string line)

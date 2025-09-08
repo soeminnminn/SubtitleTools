@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
+using System.Linq;
 
 namespace SubtitleTools
 {
@@ -9,159 +9,124 @@ namespace SubtitleTools
     {
         public string FileExtension { get; set; } = ".smi";
 
-        public bool Parse(Stream stream, out Subtitle result)
+        public bool IsSupported(string input)
         {
-            var items = new List<Dialogue>();
-            var sr = new StreamReader(stream);
-
-            var line = sr.ReadLine();
-            if (line == null || !line.Equals("<SAMI>"))
-            {
-                sr.Close();
-                result = null;
-                return false;
-            }
-
-            while ((line = sr.ReadLine()) != null)
-            {
-                if (line.Equals("<BODY>"))
-                {
-                    break;
-                }
-            }
-
-            if (string.IsNullOrEmpty(line))
-            {
-                sr.Close();
-                result = null;
-                return false;
-            }
-
-            var check = false;
-            var miClassString = new string[2];
-            var sb = new StringBuilder();
-            var sbComment = false;
-
-            while (string.IsNullOrEmpty(line) != true)
-            {
-                if (check == false)
-                {
-                    line = sr.ReadLine();
-
-                    while (true)
-                    {
-                        if (string.IsNullOrEmpty(line))
-                        {
-                            line = sr.ReadLine();
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    check = false;
-                }
-
-                if (line.Contains("<--") && line.Contains("-->"))
-                {
-                    continue;
-                }
-
-                if (line.Contains("<!--") && line.Contains("-->"))
-                {
-                    continue;
-                }
-
-                if (line.Contains("<!--"))
-                {
-                    sbComment = true;
-                }
-
-                if (line.Contains("-->"))
-                {
-                    sbComment = false;
-                }
-
-                if (sbComment)
-                {
-                    continue;
-                }
-
-                if (line.Contains("</BODY>"))
-                {
-                    break;
-                }
-
-                if (line.Contains("</SAMI>"))
-                {
-                    break;
-                }
-
-                if (line[0].Equals('<'))
-                {
-                    var length = line.IndexOf('>');
-                    miClassString[0] = line.Substring(1, length - 1);
-                    miClassString[1] = line.Substring(length + 2);
-                    var splitIndex = miClassString[1].IndexOf('>');
-                    miClassString[1] = miClassString[1].Remove(splitIndex);
-                    var miSync = miClassString[0].Split('=');
-
-                    while ((line = sr.ReadLine())?.ToUpper().Contains("<SYNC", StringComparison.OrdinalIgnoreCase) ==
-                           false)
-                    {
-                        sb.Append(line);
-                    }
-
-                    items.Add(new Dialogue(int.Parse(miSync[1]), ConvertString(sb.ToString())));
-
-                    sb = new StringBuilder();
-
-                    check = true;
-                }
-            }
-
-            sr.Close();
-
-            for (var i = 0; i < items.Count; i++)
-            {
-                var endTime = i == items.Count - 1
-                    ? items[i].StartTime + 1000
-                    : items[i + 1].StartTime;
-
-                items[i].EndTime = endTime;
-            }
-
-            result = Utils.RemoveDuplicateItems(items);
-            return true;
+            if (string.IsNullOrEmpty(input)) return false;
+            input = input.Trim();
+            return input.StartsWith("<SAMI>") && input.EndsWith("</SAMI>");
         }
 
-        private string ConvertString(string str)
+        public bool Parse(string input, ref ISubtitle result)
         {
-            str = str.Replace("<br>", "\n");
-            str = str.Replace("<BR>", "\n");
-            str = str.Replace("&nbsp;", "");
-            str = str.Replace("<--", "");
-            str = str.Replace("<!--", "");
-            str = str.Replace("-->", "");
+            var items = new List<Dialogue>();
+            var tokenizer = new TagTokenizer(input);
 
-            try
+            bool syncFound = false;
+            var tokens = new List<TagTokenizer.TokenResult>();
+            int start = 0;
+
+            while (tokenizer.NextToken())
             {
-                while (str.IndexOf("<", StringComparison.Ordinal) != -1)
+                var token = tokenizer.Current;
+                if (token.IsEmpty) continue;
+
+                if (token.TagName == "sync")
                 {
-                    var i = str.IndexOf("<", StringComparison.Ordinal);
-                    var j = str.IndexOf(">", StringComparison.Ordinal);
-                    str = str.Remove(i, j - i + 1);
+                    if (!token.IsCloseTag && token.Attributes != null && token.Attributes.TryGetValue("start", out string val))
+                    {
+                        start = int.Parse(val);
+                        if (items.Count > 0)
+                        {
+                            var prev = items[items.Count - 1];
+                            var end = CalculateEndTime(prev.StartTime, start, prev.Length);
+                            prev.EndTime = end;
+                        }
+                    }
+
+                    if (syncFound)
+                    {
+                        var striped = TokensToStripString(tokens);
+                        if (!string.IsNullOrWhiteSpace(striped))
+                        {
+                            var text = TokensToString(tokens);
+                            var end = start + (striped.Length * 200);
+                            items.Add(new Dialogue("", start, end, text));
+                        }
+                        tokens.Clear();
+                    }
+
+                    syncFound = token.IsCloseTag == false;
+                    continue;
                 }
 
-                return str;
+                if (syncFound)
+                {
+                    tokens.Add(token);
+                }
             }
-            catch
+
+            if (tokens.Count > 0)
             {
-                return str;
+                var striped = TokensToStripString(tokens);
+                if (!string.IsNullOrWhiteSpace(striped))
+                {
+                    var text = TokensToString(tokens);
+                    var end = start + (striped.Length * 200);
+                    items.Add(new Dialogue("", start, end, text));
+                }
             }
+
+            if (items.Any())
+            {
+                var list = Utils.RemoveDuplicateItems(items);
+                for (var i = 0; i < list.Count; i++)
+                {
+                    var d = list[i];
+                    if (string.IsNullOrEmpty(d.Id))
+                    {
+                        d.Id = $"{i + 1}";
+                    }
+                    result.Add(d);
+                }
+                return true;
+            }
+
+            return false;
+        }
+
+        private string TokensToStripString(List<TagTokenizer.TokenResult> tokens)
+        {
+            if (tokens.Count == 0) return string.Empty;
+            var text = tokens.Where(x => !x.IsTag).Select(x => x.InnerText).Join(" ");
+            return HtmlUtils.DecodeHtml(text).Trim();
+        }
+
+        private string TokensToString(List<TagTokenizer.TokenResult> tokens)
+        {
+            if (tokens.Count == 0) return string.Empty;
+            var text = string.Empty;
+            foreach(var token in tokens)
+            {
+                if (!string.IsNullOrEmpty(text) && token.TagName == "p")
+                {
+                    if (!token.IsCloseTag)
+                    {
+                        text += "\n";
+                    }
+                }
+                else if (token.TagName != "p")
+                {
+                    text += token.ToString();
+                }
+            }
+            return HtmlUtils.DecodeHtml(text);
+        }
+
+        private double CalculateEndTime(double currentStart, double nextStart, int textLength)
+        {
+            var end = currentStart + (textLength == 0 ? 1000 : textLength * 200);
+            end = Math.Min(end, nextStart - 200);
+            return Math.Max(currentStart + 800, end);
         }
     }
 }

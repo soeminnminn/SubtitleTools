@@ -38,7 +38,7 @@ namespace SubLib.IO.SubtitleFormats
             subtitleIn = @"\[\s*(?<StartHours>\d+)\s*:\s*(?<StartMinutes>\d+)\s*:\s*(?<StartSeconds>\d+)\s*\]\s*(?<Text>.*)\s*\[\s*(?<EndHours>\d+)\s*:\s*(?<EndMinutes>\d+)\s*:\s*(?<EndSeconds>\d+)\s*\]";
 
             subtitleOut = "[<<StartHours>>:<<StartMinutes>>:<<StartSeconds>>]<<Text>>\n" +
-                "[<<EndHours>>:<<EndMinutes>>:<<EndSeconds>>]\n";
+                          "[<<EndHours>>:<<EndMinutes>>:<<EndSeconds>>]\n";
 
         }
 

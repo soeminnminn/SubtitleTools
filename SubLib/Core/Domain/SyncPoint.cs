@@ -54,8 +54,6 @@ namespace SubLib.Core.Domain
         {
             return current.CompareTo(otherSyncPoint.Current);
         }
-
-
     }
 
 }

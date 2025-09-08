@@ -35,10 +35,17 @@ namespace SubtitleTools.UI.Helpers
             List<string> videoFiles = GetVideoFilesAtPath(fileDir);
             string filename = Path.GetFileNameWithoutExtension(file);
 
+            List<string> fileNames = new List<string>() { filename };
+            int idx = filename.LastIndexOf('.');
+            if (idx > -1)
+            {
+                fileNames.Add(filename.Substring(0, idx));
+            }
+
             foreach (string videoFile in videoFiles)
             {
                 string video = Path.GetFileNameWithoutExtension(videoFile);
-                if (video == filename)
+                if (fileNames.Contains(video))
                 {
                     string videoFilename = Path.GetFileName(videoFile);
                     return Path.Combine(fileDir, videoFilename);

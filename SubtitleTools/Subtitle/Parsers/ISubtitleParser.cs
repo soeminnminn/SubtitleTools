@@ -8,6 +8,8 @@ namespace SubtitleTools
     {
         string FileExtension { get; set; }
 
-        bool Parse(Stream stream, out Subtitle result);
+        bool IsSupported(string input);
+
+        bool Parse(string text, ref ISubtitle result);
     }
 }

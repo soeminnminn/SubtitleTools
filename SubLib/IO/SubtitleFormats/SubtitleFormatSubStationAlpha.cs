@@ -89,20 +89,20 @@ namespace SubLib.IO.SubtitleFormats
         {
             Headers headers = subtitleProperties.Headers;
             return "[Script Info]\n" +
-                Header("Title:", headers.Title, "<untitled>") +
-                Header("Original Script:", headers.SubStationAlphaOriginalScript, "<unknown>") +
-                "Script Type: " + ScriptType + "\n" +
-                Header("Original Translation:", headers.SubStationAlphaOriginalTranslation) +
-                Header("Original Editing:", headers.SubStationAlphaOriginalEditing) +
-                Header("Original Timing:", headers.SubStationAlphaOriginalTiming) +
-                Header("Original Script Checking:", headers.SubStationAlphaOriginalScriptChecking) +
-                Header("Script Updated By:", headers.SubStationAlphaScriptUpdatedBy) +
-                Header("Collisions:", headers.SubStationAlphaCollisions) +
-                Header("PlayResX:", headers.SubStationAlphaPlayResX) +
-                Header("PlayResY:", headers.SubStationAlphaPlayResY) +
-                Header("PlayDepth:", headers.SubStationAlphaPlayDepth) +
-                Header("Timer:", headers.SubStationAlphaTimer) + "\n" +
-                StyleSection;
+                    Header("Title:", headers.Title, "<untitled>") +
+                    Header("Original Script:", headers.SubStationAlphaOriginalScript, "<unknown>") +
+                    "Script Type: " + ScriptType + "\n" +
+                    Header("Original Translation:", headers.SubStationAlphaOriginalTranslation) +
+                    Header("Original Editing:", headers.SubStationAlphaOriginalEditing) +
+                    Header("Original Timing:", headers.SubStationAlphaOriginalTiming) +
+                    Header("Original Script Checking:", headers.SubStationAlphaOriginalScriptChecking) +
+                    Header("Script Updated By:", headers.SubStationAlphaScriptUpdatedBy) +
+                    Header("Collisions:", headers.SubStationAlphaCollisions) +
+                    Header("PlayResX:", headers.SubStationAlphaPlayResX) +
+                    Header("PlayResY:", headers.SubStationAlphaPlayResY) +
+                    Header("PlayDepth:", headers.SubStationAlphaPlayDepth) +
+                    Header("Timer:", headers.SubStationAlphaTimer) + "\n" +
+                    StyleSection;
         }
 
         /* Protected members */
@@ -147,7 +147,7 @@ namespace SubLib.IO.SubtitleFormats
             get
             {
                 return "[V4 Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding\n" +
-                    "Style: Default,Tahoma,24,16777215,16777215,16777215,0,-1,0,1,1,1,2,10,10,30,0,0\n\n";
+                       "Style: Default,Tahoma,24,16777215,16777215,16777215,0,-1,0,1,1,1,2,10,10,30,0,0\n\n";
             }
         }
 

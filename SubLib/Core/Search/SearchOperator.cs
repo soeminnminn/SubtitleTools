@@ -411,8 +411,6 @@ namespace SubLib.Core.Search
             string newText = regex.Replace(text, counter.Evaluator);
             return (counter.EvaluationOccurred ? newText : null);
         }
-
-
     }
 
 }

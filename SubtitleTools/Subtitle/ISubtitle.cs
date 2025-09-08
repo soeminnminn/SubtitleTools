@@ -9,6 +9,8 @@ namespace SubtitleTools
     {
         Encoding CurrentEncoding { get; set; }
 
+        SubtitleHeaders Headers { get; }
+
         bool Parse(string input);
     }
 }

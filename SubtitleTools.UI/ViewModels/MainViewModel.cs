@@ -20,12 +20,12 @@ namespace SubtitleTools.UI.ViewModels
         // https://github.com/videolan/libvlcsharp/blob/3.x/samples/LibVLCSharp.WinForms.Sample/Form1.cs
 
         #region Variables
-        public static readonly string[] EXTENSIONS = new string[] { ".srt" };
+        public static readonly string[] EXTENSIONS = new string[] { ".sub", ".smi", ".srt", ".ass", ".vtt", ".xml", ".ttml" };
 
         private OpenFileDialog openFileDialog = new()
         {
             Title = "Open file",
-            Filter = "Subrip File|*.srt|All File|*.*",
+            Filter = $"Subtitle File|*.{EXTENSIONS.Join(";*")}|All File|*.*",
             CheckFileExists = true
         };
 
@@ -258,7 +258,7 @@ namespace SubtitleTools.UI.ViewModels
         {
             await config.LoadAsync();
 
-            player = new PlayerModel(config);
+            // player = new PlayerModel(config);
 
             var args = Environment.GetCommandLineArgs();
             if (args != null && args.Length > 1)

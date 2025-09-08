@@ -9,97 +9,99 @@ namespace SubtitleTools
 {
     public class SRTParser : ISubtitleParser
     {
+        private static readonly Regex newLineRe = new Regex(@"\r?\n");
         private readonly string[] _delimiters = { "-->", "- >", "->" };
         public string FileExtension { get; set; } = ".srt";
 
-        public bool Parse(Stream stream, out Subtitle result)
+        public bool IsSupported(string input)
         {
-            var srtStream = new StreamReader(stream).BaseStream;
+            if (string.IsNullOrEmpty(input)) return false;
+            input = input.Trim();
+            input = Utils.ReplaceNewLine(input);
 
-            if (!srtStream.CanRead || !srtStream.CanSeek)
+            Regex re = new Regex(@"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) [-]{1,2}\s?> (\d{2}:\d{2}:\d{2},\d{3})\n");
+            Match match = re.Match(input);
+            int i = 0;
+            while (match.Success)
             {
-                result = null;
-                return false;
+                i++;
+                if (i == 3) break;
+                match = match.NextMatch();
             }
-
-            srtStream.Position = 0;
-
-            var reader = new StreamReader(srtStream, true);
-
-            var items = new List<Dialogue>();
-            var srtSubParts = GetSrtSubTitleParts(reader).ToList();
-            if (srtSubParts.Any())
-            {
-                foreach (var srtSubPart in srtSubParts)
-                {
-                    var lines =
-                        srtSubPart.Split(new[] { Environment.NewLine }, StringSplitOptions.None)
-                            .Select(s => s.Trim())
-                            .Where(l => !string.IsNullOrEmpty(l))
-                            .ToList();
-
-                    var item = new Dialogue();
-                    foreach (var line in lines)
-                    {
-                        if (item.StartTime == 0 && item.EndTime == 0)
-                        {
-                            int startTc;
-                            int endTc;
-                            var success = TryParseTimecodeLine(line, out startTc, out endTc);
-                            if (success)
-                            {
-                                item.StartTime = startTc;
-                                item.EndTime = endTc;
-                            }
-                        }
-                        else
-                        {
-                            item.Text = ConvertString(line);
-                        }
-
-                        item.Text = string.IsNullOrEmpty(item.Text) ? "" : item.Text;
-                    }
-
-                    if ((item.StartTime != 0 || item.EndTime != 0) && item.Text.Any())
-                    {
-                        items.Add(item);
-                    }
-                }
-
-                if (items.Any())
-                {
-                    result = Utils.RemoveDuplicateItems(items);
-                    return true;
-                }
-
-                result = null;
-                return false;
-            }
-
-            result = null;
-            return false;
+            return i == 3;
         }
 
-        private string ConvertString(string str)
+        public bool Parse(string input, ref ISubtitle result)
         {
-            str = str.Replace("<br>", "\n");
-            str = str.Replace("<BR>", "\n");
-            str = str.Replace("&nbsp;", "");
-            try
-            {
-                while (str.IndexOf("<", StringComparison.Ordinal) != -1)
-                {
-                    var i = str.IndexOf("<", StringComparison.Ordinal);
-                    var j = str.IndexOf(">", StringComparison.Ordinal);
-                    str = str.Remove(i, j - i + 1);
-                }
+            var items = new List<Dialogue>();
 
-                return str;
-            }
-            catch
+            using (var reader = new StringReader(input))
             {
-                return str;
+                var srtSubParts = GetSrtSubTitleParts(reader).ToList();
+                if (srtSubParts.Any())
+                {
+                    foreach (var srtSubPart in srtSubParts)
+                    {
+                        var lines = newLineRe.Split(srtSubPart)
+                                    .Select(s => s.Trim())
+                                    .Where(l => !string.IsNullOrEmpty(l))
+                                    .ToList();
+
+                        var item = new Dialogue();
+                        string text = string.Empty;
+                        foreach (var line in lines)
+                        {
+                            if (item.StartTime == 0 && item.EndTime == 0)
+                            {
+                                int startTc;
+                                int endTc;
+                                var success = TryParseTimecodeLine(line, out startTc, out endTc);
+                                if (success)
+                                {
+                                    int idx = lines.IndexOf(line);
+                                    if (idx > 0 && lines[idx - 1].IsNumber())
+                                    {
+                                        item.Id = lines[idx - 1].Trim();
+                                    }
+
+                                    item.StartTime = startTc;
+                                    item.EndTime = endTc;
+                                }
+                            }
+                            else if (string.IsNullOrEmpty(text))
+                            {
+                                text += line.Trim();
+                            }
+                            else
+                            {
+                                text += "\n" + line.Trim();
+                            }
+
+                            text = string.IsNullOrEmpty(text) ? "" : text;
+                        }
+
+                        if ((item.StartTime != 0 || item.EndTime != 0) && text.Any())
+                        {
+                            item.Text = text.Trim();
+                            items.Add(item);
+                        }
+                    }
+
+                    if (items.Any())
+                    {
+                        var list = Utils.RemoveDuplicateItems(items);
+                        foreach(var d in list)
+                        {
+                            result.Add(d);
+                        }
+                        return true;
+                    }
+
+                    return false;
+                }
             }
+
+            return false;
         }
 
         private IEnumerable<string> GetSrtSubTitleParts(TextReader reader)

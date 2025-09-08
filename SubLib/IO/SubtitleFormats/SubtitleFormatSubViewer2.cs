@@ -59,18 +59,18 @@ namespace SubLib.IO.SubtitleFormats
         {
             Headers headers = subtitleProperties.Headers;
             return "[INFORMATION]\n" +
-                "[TITLE]" + headers.Title + "\n" +
-                "[AUTHOR]" + headers.Author + "\n" +
-                "[SOURCE]" + headers.Source + "\n" +
-                "[PRG]" + headers.Program + "\n" +
-                "[FILEPATH]" + headers.FilePath + "\n" +
-                "[DELAY]" + headers.Delay + "\n" +
-                "[CD TRACK]" + headers.CDTrack + "\n" +
-                "[COMMENT]" + headers.Comment + "\n" +
-                "[END INFORMATION]\n" +
-                "[SUBTITLE]\n" +
-                "[COLF]" + headers.SubViewer2FontColor + ",[STYLE]" + headers.SubViewer2FontStyle +
-                ",[SIZE]" + headers.SubViewer2FontSize + ",[FONT]" + headers.SubViewer2FontName + "\n";
+                   "[TITLE]" + headers.Title + "\n" +
+                   "[AUTHOR]" + headers.Author + "\n" +
+                   "[SOURCE]" + headers.Source + "\n" +
+                   "[PRG]" + headers.Program + "\n" +
+                   "[FILEPATH]" + headers.FilePath + "\n" +
+                   "[DELAY]" + headers.Delay + "\n" +
+                   "[CD TRACK]" + headers.CDTrack + "\n" +
+                   "[COMMENT]" + headers.Comment + "\n" +
+                   "[END INFORMATION]\n" +
+                   "[SUBTITLE]\n" +
+                   "[COLF]" + headers.SubViewer2FontColor + ",[STYLE]" + headers.SubViewer2FontStyle +
+                   ",[SIZE]" + headers.SubViewer2FontSize + ",[FONT]" + headers.SubViewer2FontName + "\n";
         }
 
     }

@@ -57,11 +57,11 @@ namespace SubLib.IO.SubtitleFormats
         {
             Headers headers = subtitleProperties.Headers;
             return "# <HEAD>\n" +
-                "# FRAME RATE=" + headers.FrameRate + "\n" +
-                "# CREATOR=" + headers.Author + "\n" +
-                "# VIDEO SOURCE=" + headers.Source + "\n" +
-                "# DATE=" + headers.Date + "\n" +
-                "# </HEAD>\n#\n";
+                   "# FRAME RATE=" + headers.FrameRate + "\n" +
+                   "# CREATOR=" + headers.Author + "\n" +
+                   "# VIDEO SOURCE=" + headers.Source + "\n" +
+                   "# DATE=" + headers.Date + "\n" +
+                   "# </HEAD>\n#\n";
         }
     }
 

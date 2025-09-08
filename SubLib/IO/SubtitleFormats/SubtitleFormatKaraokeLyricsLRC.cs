@@ -40,17 +40,17 @@ namespace SubLib.IO.SubtitleFormats
             subtitleIn = @"\[\s*(?<StartMinutes>\d+)\s*:\s*(?<StartSeconds>\d+)\s*[.,]\s*(?<StartCentiseconds>\d+)\s*\]\s*(?<Text>.*)\n+\[\s*(?<EndMinutes>\d+)\s*:\s*(?<EndSeconds>\d+)\s*[.,]\s*(?<EndCentiseconds>\d+)\s*\]";
 
             subtitleOut = "[<<StartMinutes>>:<<StartSeconds>>.<<StartCentiseconds>>]<<Text>>\n" +
-                "[<<EndMinutes>>:<<EndSeconds>>.<<EndCentiseconds>>]";
+                          "[<<EndMinutes>>:<<EndSeconds>>.<<EndCentiseconds>>]";
 
             headers = new string[] {
-            @"\[\s*ti:(?<Title>.*)\s*]" ,
-            @"\[\s*au:(?<Author>.*)\s*]" ,
-            @"\[\s*ar:(?<Artist>.*)\s*]" ,
-            @"\[\s*al:(?<Album>.*)\s*]" ,
-            @"\[\s*by:(?<Maker>.*)\s*]" ,
-            @"\[\s*ve:(?<Version>.*)\s*]" ,
-            @"\[\s*re:(?<Program>.*)\s*]"
-        };
+                @"\[\s*ti:(?<Title>.*)\s*]" ,
+                @"\[\s*au:(?<Author>.*)\s*]" ,
+                @"\[\s*ar:(?<Artist>.*)\s*]" ,
+                @"\[\s*al:(?<Album>.*)\s*]" ,
+                @"\[\s*by:(?<Maker>.*)\s*]" ,
+                @"\[\s*ve:(?<Version>.*)\s*]" ,
+                @"\[\s*re:(?<Program>.*)\s*]"
+            };
 
         }
 
@@ -58,12 +58,12 @@ namespace SubLib.IO.SubtitleFormats
         {
             Headers headers = subtitleProperties.Headers;
             return "[ti: " + headers.Title + "]\n" +
-                "[au:" + headers.Author + "]\n" +
-                "[ar:" + headers.Artist + "]\n" +
-                "[al:" + headers.Album + "]\n" +
-                "[by:" + headers.FileCreator + "]\n" +
-                "[ve:" + headers.Version + "]\n" +
-                "[re:" + headers.Program + "]\n";
+                   "[au:" + headers.Author + "]\n" +
+                   "[ar:" + headers.Artist + "]\n" +
+                   "[al:" + headers.Album + "]\n" +
+                   "[by:" + headers.FileCreator + "]\n" +
+                   "[ve:" + headers.Version + "]\n" +
+                   "[re:" + headers.Program + "]\n";
         }
     }
 

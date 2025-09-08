@@ -31,29 +31,29 @@ namespace SubLib.IO.SubtitleFormats
         /* Must be ordered with more precise/complex subtitle formats first, so simple/general/catch-all formats don't match other formats
          * Must conform to the order in SubtitleType Enum */
         private static SubtitleFormat[] subtitleFormats = {
-        new SubtitleFormatMicroDVD(),
-        new SubtitleFormatSubRip(),
-        new SubtitleFormatSubStationAlpha(),
-        new SubtitleFormatAdvancedSubStationAlpha(),
-        new SubtitleFormatMPlayer(),
-        new SubtitleFormatMPlayer2(),
-        new SubtitleFormatMPSub(),
-        new SubtitleFormatSubViewer1(),
-        new SubtitleFormatSubViewer2(),
-        new SubtitleFormatAQTitle(),
-        new SubtitleFormatMacSUB(),
-        new SubtitleFormatPhoenixJapanimationSociety(),
-        new SubtitleFormatPanimator(),
-        new SubtitleFormatSofni(),
-        new SubtitleFormatSubCreator1x(),
-        new SubtitleFormatViPlaySubtitleFile(),
-        new SubtitleFormatDKSSubtitleFormat(),
-        new SubtitleFormatPowerDivX(),
-        new SubtitleFormatKaraokeLyricsVKT(),
-        new SubtitleFormatKaraokeLyricsLRC(),
-        new SubtitleFormatAdobeEncoreDVD(),
-        new SubtitleFormatFABSubtitler()
-    };
+            new SubtitleFormatMicroDVD(),
+            new SubtitleFormatSubRip(),
+            new SubtitleFormatSubStationAlpha(),
+            new SubtitleFormatAdvancedSubStationAlpha(),
+            new SubtitleFormatMPlayer(),
+            new SubtitleFormatMPlayer2(),
+            new SubtitleFormatMPSub(),
+            new SubtitleFormatSubViewer1(),
+            new SubtitleFormatSubViewer2(),
+            new SubtitleFormatAQTitle(),
+            new SubtitleFormatMacSUB(),
+            new SubtitleFormatPhoenixJapanimationSociety(),
+            new SubtitleFormatPanimator(),
+            new SubtitleFormatSofni(),
+            new SubtitleFormatSubCreator1x(),
+            new SubtitleFormatViPlaySubtitleFile(),
+            new SubtitleFormatDKSSubtitleFormat(),
+            new SubtitleFormatPowerDivX(),
+            new SubtitleFormatKaraokeLyricsVKT(),
+            new SubtitleFormatKaraokeLyricsLRC(),
+            new SubtitleFormatAdobeEncoreDVD(),
+            new SubtitleFormatFABSubtitler()
+        };
 
         internal static SubtitleFormat[] SubtitleFormats
         {

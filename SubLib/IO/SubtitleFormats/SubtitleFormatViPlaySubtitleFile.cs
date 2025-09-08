@@ -41,7 +41,7 @@ namespace SubLib.IO.SubtitleFormats
             subtitleIn = @"(?<StartHours>\d+)\s*:\s*(?<StartMinutes>\d+)\s*:\s*(?<StartSeconds>\d+)\s*[,.]\s*(?<StartMilliseconds>\d+)\s*-\s*(?<EndHours>\d+)\s*:\s*(?<EndMinutes>\d+)\s*:\s*(?<EndSeconds>\d+)\s*[,.]\s*(?<EndMilliseconds>\d+)\s*=\s*(?<Text>.*)";
 
             subtitleOut = "<<StartHours>>:<<StartMinutes>>:<<StartSeconds>>,<<StartMilliseconds>>-" +
-                "<<EndHours>>:<<EndMinutes>>:<<EndSeconds>>,<<EndMilliseconds>>=<<Text>>";
+                          "<<EndHours>>:<<EndMinutes>>:<<EndSeconds>>,<<EndMilliseconds>>=<<Text>>";
 
             bodyBeginOut = "{* VIPLAY SUBTITLE FILE *}\n";
 

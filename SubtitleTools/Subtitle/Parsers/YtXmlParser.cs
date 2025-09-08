@@ -11,77 +11,78 @@ namespace SubtitleTools
     {
         public string FileExtension { get; set; } = ".xml";
 
-        public bool Parse(Stream stream, out Subtitle result)
+        public bool IsSupported(string input)
         {
-            var xmlStream = new StreamReader(stream).BaseStream;
-            // rewind the stream
-            xmlStream.Position = 0;
-            var items = new List<Dialogue>();
-
-            // parse xml stream
-            var xmlDoc = new XmlDocument();
-            xmlDoc.Load(xmlStream);
-
-            if (xmlDoc.DocumentElement != null)
-            {
-                var nodeList = xmlDoc.DocumentElement.SelectNodes("//text");
-
-                if (nodeList != null)
-                {
-                    for (var i = 0; i < nodeList.Count; i++)
-                    {
-                        var node = nodeList[i];
-                        try
-                        {
-                            var startString = node.Attributes["start"].Value;
-                            var start = float.Parse(startString, CultureInfo.InvariantCulture);
-                            var durString = node.Attributes["dur"].Value;
-                            var duration = float.Parse(durString, CultureInfo.InvariantCulture);
-                            var text = node.InnerText;
-
-                            items.Add(new Dialogue($"{items.Count + 1}", (int)(start * 1000), (int)((start + duration) * 1000), ConvertString(text)));
-                        }
-                        catch
-                        {
-                            result = null;
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            if (items.Any())
-            {
-                result = Utils.RemoveDuplicateItems(items);
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
-
-        private string ConvertString(string str)
-        {
-            str = str.Replace("<br />", "\r\n");
-            str = str.Replace("<BR />", "\r\n");
-            str = str.Replace("<br>", "\r\n");
-            str = str.Replace("<BR>", "\r\n");
+            if (string.IsNullOrEmpty(input)) return false;
+            input = input.Trim();
 
             try
             {
-                while (str.IndexOf("<", StringComparison.Ordinal) != -1)
+                using (var textReader = new StringReader(input))
                 {
-                    var i = str.IndexOf("<", StringComparison.Ordinal);
-                    var j = str.IndexOf(">", StringComparison.Ordinal);
-                    str = str.Remove(i, j - i + 1);
+                    var xmlDoc = new XmlDocument();
+                    xmlDoc.Load(textReader);
+                    if (xmlDoc.DocumentElement != null)
+                    {
+                        var nodeList = xmlDoc.DocumentElement.SelectNodes("//text");
+                        return nodeList != null && nodeList.Count > 0;
+                    }
                 }
+            }
+            catch { }
 
-                return str;
-            }
-            catch
+            return false;
+        }
+
+        public bool Parse(string input, ref ISubtitle result)
+        {
+            var items = new List<Dialogue>();
+
+            using (var textReader = new StringReader(input))
             {
-                return str;
+                // parse xml stream
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(textReader);
+
+                if (xmlDoc.DocumentElement != null)
+                {
+                    var nodeList = xmlDoc.DocumentElement.SelectNodes("//text");
+
+                    if (nodeList != null)
+                    {
+                        for (var i = 0; i < nodeList.Count; i++)
+                        {
+                            var node = nodeList[i];
+                            try
+                            {
+                                var startString = node.Attributes["start"].Value;
+                                var start = float.Parse(startString, CultureInfo.InvariantCulture);
+                                var durString = node.Attributes["dur"].Value;
+                                var duration = float.Parse(durString, CultureInfo.InvariantCulture);
+                                var text = node.InnerText;
+
+                                items.Add(new Dialogue($"{items.Count + 1}", (int)(start * 1000), (int)((start + duration) * 1000), text.Trim()));
+                            }
+                            catch
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }   
+
+            if (items.Any())
+            {
+                var list = Utils.RemoveDuplicateItems(items);
+                foreach (var d in list)
+                {
+                    result.Add(d);
+                }
+                return true;
             }
+
+            return false;
         }
     }
 }

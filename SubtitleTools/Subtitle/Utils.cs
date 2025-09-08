@@ -7,6 +7,9 @@ namespace SubtitleTools
 {
     public static class Utils
     {
+        #region Variables
+        #endregion
+
         #region Milliseconds
         /// <summary>
         /// The duration in milliseconds
@@ -168,6 +171,9 @@ namespace SubtitleTools
         public static string Join(this IEnumerable<string> arr, string separator)
             => string.Join(separator, arr);
 
+        public static IEnumerable<string> TakeNotEmpty(this IEnumerable<string> arr)
+            => arr.Where(x => !string.IsNullOrWhiteSpace(x));
+
         public static string ReplaceRegex(this string str, string pattern, string replacement)
             => Regex.Replace(str, pattern, replacement);
 
@@ -177,6 +183,18 @@ namespace SubtitleTools
         public static string Replace(this string str, Regex regex, string replacement)
             => regex.Replace(str, replacement);
 
+        public static string Replace(this string str, Regex regex, MatchEvaluator evaluator)
+            => regex.Replace(str, evaluator);
+
+        public static string ReplaceNewLine(this string input, string replacement = "\n")
+        {
+            if (!string.IsNullOrEmpty(input))
+            {
+                return ToolsConstants.newLineRe.Replace(input, replacement);
+            }
+            return input;
+        }
+
         public static string[] Split(this string str, Regex regex)
             => regex.Split(str);
 
@@ -185,9 +203,51 @@ namespace SubtitleTools
 
         public static string[] SplitRegex(this string str, string pattern, RegexOptions options)
             => Regex.Split(str, pattern, options);
+
+        public static string[] SplitLines(this string input, bool filterEmpty = false)
+        {
+            if (!string.IsNullOrEmpty(input))
+            {
+                var lines = ToolsConstants.newLineRe.Split(input);
+                if (filterEmpty)
+                {
+                    return lines.Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                }
+                return lines;
+            }
+            return new string[0];
+        }
+
+        public static string TrimWhitespace(this string input)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+            string str = input.Trim();
+            str = ToolsConstants.trimWhitespaceStartRe.Replace(str, "");
+            str = ToolsConstants.trimWhitespaceEndRe.Replace(str, "");
+            return str;
+        }
+
+        public static string EscapeDot(this string input)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+            string str = " " + input.Trim() + " ";
+
+            foreach (var rep in ToolsConstants.escapeDotRe)
+            {
+                str = rep.Replace(str);
+            }
+
+            return str;
+        }
+
+        public static string UnescapeDot(this string input)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+            return Regex.Replace(input.Trim(), ToolsConstants.dotEscape, ".").Trim();
+        }
         #endregion
 
-        #region Helper
+        #region Helpers
         public static string SubTimeToSSA(string str)
         {
             bool first = true;
@@ -214,9 +274,9 @@ namespace SubtitleTools
             }).Join(".");
         }
 
-        public static Subtitle RemoveDuplicateItems(IEnumerable<Dialogue> data)
+        public static List<Dialogue> RemoveDuplicateItems(IEnumerable<Dialogue> data)
         {
-            var filteredItems = new Subtitle();
+            var filteredItems = new List<Dialogue>();
             var previousItem = new Dialogue();
 
             foreach (var d in data.Where(d =>

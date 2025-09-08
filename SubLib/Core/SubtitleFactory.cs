@@ -260,8 +260,6 @@ namespace SubLib.Core
             else
                 subtitles.UpdateTimesFromFrames(originalFrameRate);
         }
-
     }
-
 }
 

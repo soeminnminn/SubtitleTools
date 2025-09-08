@@ -9,90 +9,105 @@ namespace SubtitleTools
 {
     public class VTTParser : ISubtitleParser
     {
+        private static readonly Regex newLineRe = new Regex(@"\r?\n");
         private readonly string[] _delimiters = { "-->", "- >", "->" };
         public string FileExtension { get; set; } = ".vtt";
 
-        public bool Parse(Stream stream, out Subtitle result)
+        public bool IsSupported(string input)
         {
-            var vttStream = new StreamReader(stream).BaseStream;
-            if (!vttStream.CanRead || !vttStream.CanSeek)
+            if (string.IsNullOrEmpty(input)) return false;
+            input = input.Trim();
+
+            if (input.StartsWith("WEBVTT"))
             {
-                result = null;
-                return false;
-            }
+                input = Utils.ReplaceNewLine(input);
 
-            vttStream.Position = 0;
-
-            var reader = new StreamReader(vttStream, true);
-
-            var items = new List<Dialogue>();
-            var vttSubParts = GetVttSubTitleParts(reader).ToList();
-            if (vttSubParts.Any())
-            {
-                foreach (var vttSubPart in vttSubParts)
+                Regex re = new Regex(@"((\d{2}:)?\d{2}:\d{2}[\.,]\d{3}) [-]{1,2}\s?> ((\d{2}:)?\d{2}:\d{2}[\.,]\d{3})\n");
+                Match match = re.Match(input);
+                int i = 0;
+                while (match.Success)
                 {
-                    var lines =
-                        vttSubPart.Split(new[] { Environment.NewLine }, StringSplitOptions.None)
-                            .Select(s => s.Trim())
-                            .Where(l => !string.IsNullOrEmpty(l))
-                            .ToList();
-
-                    var item = new Dialogue();
-                    foreach (var line in lines)
-                    {
-                        if (item.StartTime == 0 && item.EndTime == 0)
-                        {
-                            int startTc;
-                            int endTc;
-                            var success = TryParseTimecodeLine(line, out startTc, out endTc);
-                            if (success)
-                            {
-                                item.StartTime = startTc;
-                                item.EndTime = endTc;
-                            }
-                        }
-                        else
-                        {
-                            item.Text = ConvertString(line);
-                        }
-
-                        item.Text = string.IsNullOrEmpty(item.Text) ? "" : item.Text;
-                    }
-
-                    if ((item.StartTime != 0 || item.EndTime != 0) && item.Text.Any())
-                    {
-                        items.Add(item);
-                    }
+                    i++;
+                    if (i == 3) break;
+                    match = match.NextMatch();
                 }
-
-                result = Utils.RemoveDuplicateItems(items);
-                return true;
+                return i == 3;
             }
-
-            result = null;
             return false;
         }
 
-        private string ConvertString(string str)
+        public bool Parse(string input, ref ISubtitle result)
         {
-            str = str.Replace("<br>", "\n");
-            str = str.Replace("<BR>", "\n");
-            str = str.Replace("&nbsp;", "");
-            try
+            var items = new List<Dialogue>();
+            
+            using (var reader = new StringReader(input))
             {
-                while (str.IndexOf("<", StringComparison.Ordinal) != -1)
+                var vttSubParts = GetVttSubTitleParts(reader).ToList();
+                if (vttSubParts.Any())
                 {
-                    var i = str.IndexOf("<", StringComparison.Ordinal);
-                    var j = str.IndexOf(">", StringComparison.Ordinal);
-                    str = str.Remove(i, j - i + 1);
-                }
+                    foreach (var vttSubPart in vttSubParts)
+                    {
+                        var lines = newLineRe.Split(vttSubPart)
+                                .Select(s => s.Trim())
+                                .Where(l => !string.IsNullOrEmpty(l))
+                                .ToList();
 
-                return str;
+                        var item = new Dialogue();
+                        string text = string.Empty;
+
+                        foreach (var line in lines)
+                        {
+                            if (item.StartTime == 0 && item.EndTime == 0)
+                            {
+                                int startTc;
+                                int endTc;
+                                var success = TryParseTimecodeLine(line, out startTc, out endTc);
+                                if (success)
+                                {
+                                    int idx = lines.IndexOf(line);
+                                    if (idx > 0 && lines[idx - 1].IndexOf(' ') == -1)
+                                    {
+                                        item.Id = lines[idx - 1].Trim();
+                                    }
+
+                                    item.StartTime = startTc;
+                                    item.EndTime = endTc;
+                                }
+                            }
+                            else if (string.IsNullOrEmpty(text))
+                            {
+                                text += line.Trim();
+                            }
+                            else
+                            {
+                                text += "\n" + line.Trim();
+                            }
+
+                            text = string.IsNullOrEmpty(text) ? "" : text;
+                        }
+
+                        if ((item.StartTime != 0 || item.EndTime != 0) && text.Any())
+                        {
+                            item.Text = text.Trim();
+                            items.Add(item);
+                        }
+                    }
+
+                    var list = Utils.RemoveDuplicateItems(items);
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        var d = list[i];
+                        if (string.IsNullOrEmpty(d.Id))
+                        {
+                            d.Id = $"{i + 1}";
+                        }
+                        result.Add(d);
+                    }
+                    return true;
+                }
             }
-            catch
-            {
-                return str;
-            }
+
+            return false;
         }
 
         private IEnumerable<string> GetVttSubTitleParts(TextReader reader)

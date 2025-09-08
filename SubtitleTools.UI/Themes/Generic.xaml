@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:SubtitleTools.UI"
+                    xmlns:ctrl="clr-namespace:SubtitleTools.UI.Controls"
                     xmlns:sub="clr-namespace:SubtitleTools;assembly=SubtitleTools" >
     
     <DataTemplate x:Key="DialogueListItemTemplate" DataType="{x:Type sub:Dialogue}">
@@ -29,8 +30,8 @@
 
                 <TextBlock Grid.Column="2" Grid.RowSpan="2" Text="{Binding Duration}" Margin="4,0,4,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
-                <Border Grid.Column="3" Grid.RowSpan="3" BorderBrush="{StaticResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="1,0,0,0">
-                    <TextBlock MinHeight="40" Text="{Binding Text}" Padding="4" />
+                <Border Grid.Column="3" Grid.RowSpan="3" Background="#D0000000" BorderBrush="{StaticResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="1,0,0,0">
+                    <ctrl:InlinesTextBlock MinHeight="40" Text="{Binding StyledText}" Foreground="White" FontFamily="Tahoma" Padding="4" />
                 </Border>
             </Grid>
         </Border>

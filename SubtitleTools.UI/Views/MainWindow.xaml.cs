@@ -52,6 +52,7 @@ namespace SubtitleTools.UI.Views
         #region Methods
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            testText.Text = @"The <b>quick <i>brown</i> fox jump <font color=""#ff0000"">over</font></b> <u>lazy</u> dog.";
             model.Initialize();
         }
 
@@ -88,7 +89,6 @@ namespace SubtitleTools.UI.Views
         private void Model_FileLoaded(object sender, EventArgs e)
         {
             Title = $"Subtitle Tools - {model.CurrentFileName}";
-
             CommandManager.InvalidateRequerySuggested();
         }
 

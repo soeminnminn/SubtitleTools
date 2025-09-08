@@ -13,8 +13,8 @@
         <SolidColorBrush x:Key="CaptionBackground" Color="#eef5fd" />
     </UserControl.Resources>
 
-    <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="1">
-        <Grid>
+    <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="1" VerticalAlignment="Stretch">
+        <Grid VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition />
@@ -40,34 +40,27 @@
 
                     <ToolBarTray Grid.Column="2" HorizontalAlignment="Right" IsLocked="True" Background="Transparent">
                         <ToolBar Background="Transparent">
-                            <Button ToolTip="Unbrake">
-                                <Image Source="{StaticResource Unbrake_16x}" />
-                            </Button>
-                            <Button ToolTip="Auto break">
-                                <Image Source="{StaticResource Rebrake_16x}" />
-                            </Button>
-                            <Separator />
                             <local:DropdownButton ToolBar.OverflowMode="Never">
                                 <local:DropdownButton.DropdownMenu>
                                     <ContextMenu>
-                                        <MenuItem Header="…" />
-                                        <MenuItem Header="♪" />
-                                        <MenuItem Header="♫" />
-                                        <MenuItem Header="☺" />
+                                        <MenuItem Header="…" Command="local:DialogueEdit.AddCharCommand" CommandParameter="…"/>
+                                        <MenuItem Header="♪" Command="local:DialogueEdit.AddCharCommand" CommandParameter="♪"/>
+                                        <MenuItem Header="♫" Command="local:DialogueEdit.AddCharCommand" CommandParameter="♫"/>
+                                        <MenuItem Header="☺" Command="local:DialogueEdit.AddCharCommand" CommandParameter="☺"/>
                                     </ContextMenu>
                                 </local:DropdownButton.DropdownMenu>
                                 <Image Source="{StaticResource Add_16x}" />
                             </local:DropdownButton>
-                            <Button ToolTip="Bold">
+                            <Button ToolTip="Bold" Command="local:DialogueEdit.BoldCommand">
                                 <Image Source="{StaticResource Bold_16x}" />
                             </Button>
-                            <Button ToolTip="Italic">
+                            <Button ToolTip="Italic" Command="local:DialogueEdit.ItalicCommand">
                                 <Image Source="{StaticResource Italic_16x}" />
                             </Button>
-                            <Button ToolTip="Underline">
+                            <Button ToolTip="Underline" Command="local:DialogueEdit.UnderlineCommand">
                                 <Image Source="{StaticResource Underline_16x}" />
                             </Button>
-                            <Button ToolTip="List">
+                            <Button ToolTip="List" Command="local:DialogueEdit.BulletListCommand">
                                 <Image Source="{StaticResource BulletList_16x}" />
                             </Button>
                         </ToolBar>
@@ -75,7 +68,10 @@
                 </Grid>
             </Border>
 
-            <TextBox x:Name="DialougeInput" Grid.Row="1" Text="{Binding Text, Mode=TwoWay}" TextWrapping="NoWrap" AcceptsReturn="True" MinHeight="70" Padding="4" BorderThickness="0,1,0,0" />
+            <TextBox x:Name="DialougeInput" Grid.Row="1" Text="{Binding Text, Mode=TwoWay}" TextWrapping="NoWrap"
+                     FontFamily="Tahoma"
+                     HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                     AcceptsReturn="True" MinHeight="70" Padding="4" BorderThickness="0,1,0,0" />
         </Grid>
     </Border>
 </UserControl>

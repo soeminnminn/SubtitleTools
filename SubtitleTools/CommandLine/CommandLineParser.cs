@@ -1,4 +1,7 @@
-﻿using System;
+﻿/**
+ * https://github.com/j-maly/CommandLineParser
+ */
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -41,11 +44,15 @@ namespace CommandLine
 
         private readonly List<string> _showUsageCommands = new List<string> { "--help", "/?", "/help" };
 
+        private bool _acceptDefault = false;
+
         private bool _acceptSlash = true;
 
         private bool _acceptHyphen = true;
 
         private bool _ignoreCase;
+
+        private string _defaultArgument = string.Empty;
 
         private char[] equalsSignSyntaxValuesSeparators = new char[] { ',', ';' };
 
@@ -131,6 +138,23 @@ namespace CommandLine
         {
             get { return _checkArgumentCertifications; }
             set { _checkArgumentCertifications = value; }
+        }
+
+        /// <summary>
+        /// Allows default argument in first
+        /// </summary>
+        public bool AcceptDefault
+        {
+            get { return _acceptDefault; }
+            set { _acceptDefault = value; }
+        }
+
+        /// <summary>
+        /// Get default argument
+        /// </summary>
+        public string DefaultArgument
+        {
+            get { return _defaultArgument; }
         }
 
         /// <summary>
@@ -261,20 +285,28 @@ namespace CommandLine
             ExpandShortSwitches(argsList);
             AdditionalArgumentsSettings.AdditionalArguments = new string[0];
 
+            _defaultArgument = string.Empty;
             _argsNotParsed = args;
 
-            if ((args.Length == 0 && ShowUsageOnEmptyCommandline) ||
-                (args.Length == 1 && _showUsageCommands.Contains(args[0])))
+            int len = args.Length;
+            if ((len == 0 && ShowUsageOnEmptyCommandline) ||
+                (len == 1 && _showUsageCommands.Contains(args[0])))
             {
                 ShowUsage();
                 return;
             }
 
-            if (args.Length > 0)
+            if (len > 0)
             {
-                int argIndex;
+                int argIndex = 0;
 
-                for (argIndex = 0; argIndex < argsList.Count;)
+                if (_acceptDefault)
+                {
+                    _defaultArgument = args[0].Trim();
+                    argIndex = 1;
+                }
+
+                for (; argIndex < argsList.Count;)
                 {
                     string curArg = argsList[argIndex];
                     Argument argument = ParseArgument(curArg);

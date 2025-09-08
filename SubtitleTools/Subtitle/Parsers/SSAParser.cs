@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SubtitleTools
 {
     public class SSAParser : ISubtitleParser
     {
+        private static readonly Regex newLineRe = new Regex(@"\r?\n");
+        private const string ScriptInfoLine = "[Script Info]";
         private const string EventLine = "[Events]";
         private const char Separator = ',';
 
@@ -15,108 +18,111 @@ namespace SubtitleTools
         private const string TextColumn = "Text";
         public string FileExtension { get; set; } = ".ass|.ssa";
 
-        public bool Parse(Stream stream, out Subtitle result)
+        public bool IsSupported(string input)
         {
-            var ssaStream = new StreamReader(stream).BaseStream;
-            if (!ssaStream.CanRead || !ssaStream.CanSeek)
+            if (string.IsNullOrEmpty(input)) return false;
+            input = input.Trim();
+            if (input.StartsWith(ScriptInfoLine))
             {
-                result = null;
-                return false;
+                string[] lines = newLineRe.Split(input);
+                int eventIndx = Array.IndexOf(lines, EventLine);
+                return eventIndx > 1;
             }
-
-            ssaStream.Position = 0;
-
-            var reader = new StreamReader(ssaStream, true);
-
-            var line = reader.ReadLine();
-            var lineNumber = 1;
-            while (line != null && line != EventLine)
-            {
-                line = reader.ReadLine();
-                lineNumber++;
-            }
-
-            if (line != null)
-            {
-                var headerLine = reader.ReadLine();
-                if (!string.IsNullOrEmpty(headerLine))
-                {
-                    var columnHeaders = headerLine.Split(Separator).Select(head => head.Trim()).ToList();
-
-                    var startIndexColumn = columnHeaders.IndexOf(StartColumn);
-                    var endIndexColumn = columnHeaders.IndexOf(EndColumn);
-                    var textIndexColumn = columnHeaders.IndexOf(TextColumn);
-
-                    if (startIndexColumn > 0 && endIndexColumn > 0 && textIndexColumn > 0)
-                    {
-                        var items = new List<Dialogue>();
-
-                        line = reader.ReadLine();
-                        while (line != null)
-                        {
-                            if (!string.IsNullOrEmpty(line))
-                            {
-                                var columns = line.Split(Separator);
-                                var startText = columns[startIndexColumn];
-                                var endText = columns[endIndexColumn];
-
-                                var textLine = string.Join(",", columns.Skip(textIndexColumn));
-
-                                var start = ParseSsaTimecode(startText);
-                                var end = ParseSsaTimecode(endText);
-
-                                if (start > 0 && end > 0 && !string.IsNullOrEmpty(textLine))
-                                {
-                                    var item = new Dialogue($"{items.Count + 1}", start, end, ConvertString(textLine));
-                                    items.Add(item);
-                                }
-                            }
-
-                            line = reader.ReadLine();
-                        }
-
-                        if (items.Any())
-                        {
-                            result = Utils.RemoveDuplicateItems(items);
-                            return true;
-                        }
-
-                        result = null;
-                        return false;
-                    }
-
-                    result = null;
-                    return false;
-                }
-
-                result = null;
-                return false;
-            }
-
-            result = null;
             return false;
         }
 
-        private string ConvertString(string str)
+        public bool Parse(string input, ref ISubtitle result)
         {
-            str = str.Replace("<br>", "\n");
-            str = str.Replace("<BR>", "\n");
-            str = str.Replace("\\N", "\n");
-            try
+            using (var reader = new StringReader(input))
             {
-                while (str.IndexOf("{", StringComparison.Ordinal) != -1)
+                var line = reader.ReadLine();
+                var lineNumber = 1;
+                bool hasInfo = line == ScriptInfoLine;
+
+                while (line != null && line != EventLine)
                 {
-                    var i = str.IndexOf("{", StringComparison.Ordinal);
-                    var j = str.IndexOf("}", StringComparison.Ordinal);
-                    str = str.Remove(i, j - i + 1);
+                    line = reader.ReadLine();
+                    lineNumber++;
+
+                    if (!string.IsNullOrEmpty(line))
+                    {
+                        var trimedLine = line.Trim();
+                        if (trimedLine.StartsWith('[') && trimedLine.EndsWith(']'))
+                        {
+                            hasInfo = false;
+                        }
+
+                        if (hasInfo && !trimedLine.StartsWith(';') && trimedLine.Contains(':'))
+                        {
+                            var idx = trimedLine.IndexOf(':');
+                            var key = trimedLine.Substring(0, idx);
+                            var val = trimedLine.Substring(idx + 1);
+
+                            result.Headers.Meta.Add(key.Trim(), val.Trim());
+                        }
+                    }
                 }
 
-                return str;
+                if (line != null)
+                {
+                    var headerLine = reader.ReadLine();
+                    if (!string.IsNullOrEmpty(headerLine))
+                    {
+                        var columnHeaders = headerLine.Split(Separator).Select(head => head.Trim()).ToList();
+
+                        var startIndexColumn = columnHeaders.IndexOf(StartColumn);
+                        var endIndexColumn = columnHeaders.IndexOf(EndColumn);
+                        var textIndexColumn = columnHeaders.IndexOf(TextColumn);
+
+                        if (startIndexColumn > 0 && endIndexColumn > 0 && textIndexColumn > 0)
+                        {
+                            var items = new List<Dialogue>();
+
+                            line = reader.ReadLine();
+                            while (line != null)
+                            {
+                                if (!string.IsNullOrEmpty(line))
+                                {
+                                    var columns = line.Split(Separator);
+                                    var startText = columns[startIndexColumn];
+                                    var endText = columns[endIndexColumn];
+
+                                    var textLine = string.Join(",", columns.Skip(textIndexColumn));
+
+                                    var start = ParseSsaTimecode(startText);
+                                    var end = ParseSsaTimecode(endText);
+
+                                    if (start > 0 && end > 0 && !string.IsNullOrEmpty(textLine))
+                                    {
+                                        var item = new Dialogue($"{items.Count + 1}", start, end, textLine.Trim());
+                                        items.Add(item);
+                                    }
+                                }
+
+                                line = reader.ReadLine();
+                            }
+
+                            if (items.Any())
+                            {
+                                var list = Utils.RemoveDuplicateItems(items);
+                                foreach (var d in list)
+                                {
+                                    result.Add(d);
+                                }
+                                return true;
+                            }
+
+                            return false;
+                        }
+
+                        return false;
+                    }
+
+                    return false;
+                }
             }
-            catch
-            {
-                return str;
-            }
+
+            return false;
         }
 
         private int ParseSsaTimecode(string s)

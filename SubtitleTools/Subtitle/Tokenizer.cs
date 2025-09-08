@@ -54,33 +54,13 @@ namespace SubtitleTools
         internal static readonly Regex htmlTagRe = new Regex(@"^<[^>]+>$");
         internal static readonly Regex noneDlgRe = new Regex(@"^\([^\(]+\)|\[[^\]]+\]|\{[^\{\}]+\}$");
         internal static readonly Regex beforeColonRe = new Regex(@"^([^:]+:)");
-        internal static readonly Regex songTagRe = new Regex(@"[¶\u226a\u226b]+");
-        internal static readonly Regex speratorCharRe = new Regex(@"([^\.\?!;,\u2026]*[\.\?!;,\u2026]+)");
+        internal static readonly Regex songTagRe = new Regex(@"[¶♪♫]+");
+        internal static readonly Regex speratorCharRe = new Regex(@"([^\.\?!;,…]*[\.\?!;,…]+)");
 
         internal static readonly Regex urlRegex = new Regex(@"(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])", RegexOptions.IgnoreCase);
         internal static readonly Regex urlTagRe = new Regex(@"<url href=\""([^\""]+)\"">");
 
         internal static readonly Regex thousandSepRe = new Regex(@"([\d]{1,3})+([,]\s?[\d]{3})*([\.][\d]*)?");
-
-        internal static readonly Regex[] adMatches = new Regex[]
-        {
-            new Regex(@"^Fixed (and|&) Synced by", RegexOptions.IgnoreCase),
-            new Regex(@"^Sub by", RegexOptions.IgnoreCase),
-            new Regex(@"^Improved By", RegexOptions.IgnoreCase),
-            new Regex(@"^Subtitles by", RegexOptions.IgnoreCase),
-            new Regex(@"^Created (and|&) Encoded by", RegexOptions.IgnoreCase),
-            new Regex(@"^Re-Sync (and|&) Improved By", RegexOptions.IgnoreCase),
-            new Regex(@"^Synced (and|&) corrected by", RegexOptions.IgnoreCase),
-            new Regex(@"^English [\-] [A-Z]+", RegexOptions.IgnoreCase),
-            new Regex(@"^Advertise your product", RegexOptions.IgnoreCase),
-            new Regex(@"www\.[^\.]+advice.com", RegexOptions.IgnoreCase),
-            new Regex(@"^Downloaded from", RegexOptions.IgnoreCase),
-            new Regex(@"^Official.*movies site", RegexOptions.IgnoreCase),
-            new Regex(@"movie info.*file", RegexOptions.IgnoreCase),
-
-            new Regex(@"\b(caption(s|ed)?|subtitl(e|ed|es|ing)|fixed(?!-)|(re-?)?synch?(?!-)(ed|ro(nized)?)?|rip(ped)?(?!-)|translat(e|ed|ion|ions)|correct(ions|ed)|transcri(be|bed|pt|ption|ptions)|improve(d|ments)|subs|provided|encoded|edit(ed|s)?)\W*(by|from)?\W*(:|;)..", RegexOptions.IgnoreCase),
-            new Regex(@"^present(s|ing)?:$", RegexOptions.IgnoreCase),
-        };
 
         internal static readonly string[] inColoned = new string[]
         {
@@ -125,47 +105,43 @@ namespace SubtitleTools
 
         internal static readonly Regex tokenRe = new Regex($"({tokenReParts.Join("|")})", RegexOptions.Compiled);
 
-        internal static readonly (Regex, string)[] preTokenRe = new (Regex, string)[]
+        internal static readonly ReplaceCondition[] preTokenRe = new ReplaceCondition[]
         {
-            (new Regex(@"[\._]{2,}"), "…"),
-            (new Regex(@"(\. ){2,}\."), "…"),
-            (new Regex(@"[\u2012-\u2015\u2025]+"), "…"),
-            (new Regex(@"([a-zA-Z])[-]{2,}"), "$1…"),
+            new ReplaceCondition(new Regex(@"\\[Nn]"), "\n"),
+            new ReplaceCondition(new Regex(@"\\h"), " "),
+            new ReplaceCondition(new Regex(@"<\s?br\s?\/?>", RegexOptions.IgnoreCase), "\n"),
+            new ReplaceCondition(new Regex(@"[\r\n]+"), "\n"),
 
-            (new Regex(@"\\[Nn]"), "\n"),
-            (new Regex(@"\\h"), " "),
-            (new Regex(@"<\s?br\s?\/?>", RegexOptions.IgnoreCase), "\n"),
-            (new Regex(@"[\r\n]+"), "\n"),
+            new ReplaceCondition(urlRegex, "<url href=\"$1\">"),
 
-            (urlRegex, "<url href=\"$1\">"),
+            new ReplaceCondition(new Regex(@"([“”‟″\""]+)"), "\""),
 
-            (new Regex(@"([\u201C\u201D\u201F\u2033\""]+)"), "\""),
+            new ReplaceCondition(new Regex(@"([‘’‛′\'`]+)"), "'"),
 
-            (new Regex(@"([\u2018\u2019\u201B\u2032\'`]+)"), "'"),
+            new ReplaceCondition(new Regex(@"([\.\?\'\""\s])-([a-zA-Z])"), "$1- $2"),
 
-            (new Regex(@"([\.\?\'\""\s])-([a-zA-Z])"), "$1- $2"),
+            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5·$6·$7·$8$9"),
+            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5·$6·$7$8"),
+            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5·$6$7"),
+            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5$6"),
+            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4$5"),
 
-            (new Regex(@"([\.\?\-\'\""\s])M([rs]s?)\s?\.", RegexOptions.IgnoreCase), "$1M$2·"),
-            (new Regex(@"([\.\?\-\'\""\s])(Dr)\s?\.", RegexOptions.IgnoreCase), "$1Dr·"),
-            (new Regex(@"([\.\?\-\'\""\s])(St)\s?\.", RegexOptions.IgnoreCase), "$1St·"),
-            (new Regex(@"([\.\?\-\'\""\s])(Jr?)\s?\.", RegexOptions.IgnoreCase), "$1$2·"),
-
-            (new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s\u2026])"), "$1$2·$3·$4·$5·$6·$7·$8$9"),
-            (new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s\u2026])"), "$1$2·$3·$4·$5·$6·$7$8"),
-            (new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s\u2026])"), "$1$2·$3·$4·$5·$6$7"),
-            (new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s\u2026])"), "$1$2·$3·$4·$5&6"),
-            (new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s\u2026])"), "$1$2·$3·$4$5"),
-
-            (new Regex(@"([0-9]+)\s?([AP])\s?\.\s?(M)", RegexOptions.IgnoreCase), "$1$2$3"),
-            (new Regex(@"([0-9]+)\s?\.\s?([0-9]+)"), "$1·$2"),
-            (new Regex(@"([0-9]+)\s?:\s?([0-9]+)"), "$1∶$2"),
-            // (new Regex(@"([a-zA-Z]+)\s?\""([^\""]+)\"""), "$1 “$2”"),
-            (new Regex(@"([a-zA-Z]+)([;!,\.\?])([\""”])(\s)"), "$1$3$2$4"),
+            new ReplaceCondition(new Regex(@"([0-9]+)\s?:\s?([0-9]+)"), "$1∶$2"),
+            // new ReplaceCondition(new Regex(@"([a-zA-Z]+)\s?\""([^\""]+)\"""), "$1 “$2”"),
+            new ReplaceCondition(new Regex(@"([a-zA-Z]+)([;!,\.\?])([\""”])(\s)"), "$1$3$2$4"),
         };
 
-        internal static readonly (string, string)[] preTokenReplace = new (string, string)[]
+        internal static readonly ReplaceCondition[] preTokenReplace = new ReplaceCondition[]
         {
-            ("1/4", "¼"), ("1/2", "½"), ("3/4", "¾"), ("1/3", "⅓"), ("2/3", "⅔"), ("1/8", "⅛"), ("3/8", "⅜"), ("5/8", "⅝"), ("7/8", "⅞")
+            new ReplaceCondition("1/4", "¼"),
+            new ReplaceCondition("1/2", "½"),
+            new ReplaceCondition("3/4", "¾"),
+            new ReplaceCondition("1/3", "⅓"), 
+            new ReplaceCondition("2/3", "⅔"), 
+            new ReplaceCondition("1/8", "⅛"),
+            new ReplaceCondition("3/8", "⅜"),
+            new ReplaceCondition("5/8", "⅝"),
+            new ReplaceCondition("7/8", "⅞")
         };
         #endregion
 
@@ -174,7 +150,7 @@ namespace SubtitleTools
         {
             if (beforeColonRe.IsMatch(text))
             {
-                if (Regex.IsMatch(text, @"^[0-9:;!,\.\?\-\'\""\s\u2026]+$")) return false;
+                if (Regex.IsMatch(text, @"^[0-9:;!,\.\?\-\'\""\s…]+$")) return false;
 
                 var orig = text.Replace("l", "I").Replace("0", "O")
                     .Replace("Mc", "MC").Replace("St", "ST")
@@ -200,10 +176,10 @@ namespace SubtitleTools
 
         internal static bool IsAds(string text)
         {
-            var temp = text.ReplaceRegex(@"^[:;!,\.\?\-\'\""\s\u2026]", "");
+            var temp = text.ReplaceRegex(@"^[:;!,\.\?\-\'\""\s…]", "");
 
             bool isMatch = false;
-            foreach (var re in adMatches)
+            foreach (var re in ToolsConstants.adMatches)
             {
                 isMatch = isMatch || re.IsMatch(temp);
             }
@@ -220,10 +196,10 @@ namespace SubtitleTools
 
         public static Token[] Tokenize(string input)
         {
-            string text = " " + input.Trim() + " ";
+            string text = " " + input.Trim().EscapeDot() + " ";
             foreach (var rep in preTokenRe)
             {
-                text = rep.Item1.Replace(text, rep.Item2);
+                text = rep.Replace(text);
             }
 
             text = " " + text.Trim() + " ";
@@ -234,7 +210,7 @@ namespace SubtitleTools
 
             foreach (var rep in preTokenReplace)
             {
-                text = text.Replace(rep.Item1, rep.Item2);
+                text = rep.Replace(text);
             }
             text = " " + text.Trim() + " ";
             text = text.ReplaceRegex(@"[ ]+", " ");
@@ -309,7 +285,7 @@ namespace SubtitleTools
                         type = TokenTypes.ADS;
 
                     x = urlTagRe.Replace(x, "$1");
-                    x = x.Replace('·', '.');
+                    x = x.UnescapeDot();
                     x = x.Replace('∶', ':');
 
                     result.Add(new Token(x, type));

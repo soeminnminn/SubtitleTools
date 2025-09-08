@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AssemblyVersion>1.2.0</AssemblyVersion>
+    <FileVersion>1.2.0</FileVersion>
+    <Authors>Opportunity</Authors>
+    <Company>Opportunity</Company>
+    <Description>Ass Loader is a library based on .NET to parse, modify and serialize Advanced Substation Alpha format (*.ass file).</Description>
+    <PackageProjectUrl>https://github.com/OpportunityLiu/Ass-Loader</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/OpportunityLiu/Ass-Loader.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>advanced-substation;closed caption;subtitle;subtitles-parsing;ass</PackageTags>
+  </PropertyGroup>
+
+</Project>

@@ -11,7 +11,22 @@ namespace SubtitleTools
     public partial class Subtitle : S16.Collections.ExtandableList<Dialogue>, ISubtitle
     {
         #region Variables
+        private SubtitleHeaders headers = new SubtitleHeaders();
         private Encoding encoding = Encoding.UTF8;
+
+#if MULTIPARSERS
+        private static readonly ISubtitleParser[] parsers = new ISubtitleParser[]
+        {
+            new MicroDVDParser(), 
+            new SAMIParser(),
+            new SRTParser(),
+            new SSAParser(),
+            new SubViewerParser(),
+            new TTMLParser(),
+            new VTTParser(),
+            new YtXmlParser()
+        };
+#endif
         #endregion
 
         #region Constructors
@@ -25,6 +40,11 @@ namespace SubtitleTools
             get => encoding;
             set { encoding = value; }
         }
+        
+        public virtual SubtitleHeaders Headers
+        {
+            get => headers;
+        }
         #endregion
 
         #region Methods
@@ -34,6 +54,21 @@ namespace SubtitleTools
 
             Clear();
 
+#if MULTIPARSERS
+            foreach (var parser in parsers)
+            {
+                if (parser.IsSupported(input))
+                {
+                    var subtitle = (ISubtitle)this;
+                    if (parser.Parse(input, ref subtitle))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+#else
             var regex = new Regex(@"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})");
             var lines = input.Trim().ReplaceRegex(@"\r?\n", "\n").Split(regex);
 
@@ -50,6 +85,7 @@ namespace SubtitleTools
                 ));
             }
             return true;
+#endif
         }
 
         public override string ToString()
@@ -74,6 +110,27 @@ namespace SubtitleTools
                     if (!string.IsNullOrWhiteSpace(text))
                     {
                         subtitle.CurrentEncoding = reader.CurrentEncoding;
+#if MULTIPARSERS
+                        var ext = file.Extension;
+                        if (!string.IsNullOrEmpty(ext))
+                        {
+                            ext = ext.ToLowerInvariant();
+
+                            foreach (var parser in parsers)
+                            {
+                                if (!string.IsNullOrEmpty(parser.FileExtension))
+                                {
+                                    var exts = parser.FileExtension.Split('|');
+                                    if (Array.IndexOf(exts, ext) > -1 && parser.IsSupported(text))
+                                    {
+                                        ((ICollection<Dialogue>)subtitle).Clear();
+                                        parser.Parse(text, ref subtitle);
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+#endif
                         subtitle.Parse(text);
                     }
                 }

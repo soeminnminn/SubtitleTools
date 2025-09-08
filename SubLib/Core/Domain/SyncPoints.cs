@@ -88,9 +88,6 @@ namespace SubLib.Core.Domain
         {
             return new SyncPoints(syncPoints.Clone() as SortedList);
         }
-
-
-
     }
 
 }

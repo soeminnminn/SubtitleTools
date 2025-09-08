@@ -63,7 +63,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition MinHeight="300"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition MinHeight="100" Height="Auto"/>
+                <RowDefinition MinHeight="100" Height="100"/>
             </Grid.RowDefinitions>
 
             <Grid Background="{StaticResource {x:Static SystemColors.ActiveCaptionBrushKey}}">
@@ -89,7 +89,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition MinHeight="300"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition MinHeight="100" Height="Auto"/>
+                <RowDefinition MinHeight="100" Height="100"/>
             </Grid.RowDefinitions>
 
             <Grid Background="{StaticResource {x:Static SystemColors.ActiveCaptionBrushKey}}">

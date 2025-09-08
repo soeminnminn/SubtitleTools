@@ -50,9 +50,6 @@ namespace SubLib.Core.Domain
 
             return time.CompareTo((obj as Timing).Time);
         }
-
-
-
     }
 
 }

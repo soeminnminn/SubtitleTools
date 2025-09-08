@@ -251,6 +251,13 @@ namespace SubtitleTools
             if (!string.IsNullOrEmpty(start)) start += "}";
             if (!string.IsNullOrEmpty(end)) end += "}";
 
+            var ssaTags = styles.Where(x => x.type == StyleTypes.ssaTag).Distinct().ToArray();
+            foreach (var tag in ssaTags)
+            {
+                if (tag.name == "an")
+                    start = "{\\" + tag.name + tag.attrs["value"] + "}" + start;
+            }
+
             return start + temp + end;
         }
 
@@ -282,13 +289,14 @@ namespace SubtitleTools
             if (text == null) return text;
             string temp = text.Trim();
 
-            var ssaStyles = styles.Where(x => x.type.HasFlag(StyleTypes.ssaTag)).ToArray();
-
             foreach (var style in styles)
             {
                 if (style.type == StyleTypes.htmlTag || style.type.HasFlag(StyleTypes.htmlStartTag))
                     temp = ApplyHtmlStyle(temp, style);
             }
+
+            var ssaStyles = styles.Where(x => x.type.HasFlag(StyleTypes.ssaTag)).ToArray();
+            temp = ApplySsaStyle(temp, ssaStyles);
 
             return temp;
         }

@@ -156,9 +156,6 @@ namespace SubLib.Core.Domain
             else
                 return subtitle.Translation;
         }
-
-
     }
-
 }
 

@@ -38,8 +38,8 @@ namespace SubLib.IO.SubtitleFormats
             subtitleIn = @"\[\s*(?<StartHours>\d+)\s*:\s*(?<StartMinutes>\d+)\s*:\s*(?<StartSeconds>\d+)\s*\]\s*(?<Text>.*)\s*\[\s*(?<EndHours>\d+)\s*:\s*(?<EndMinutes>\d+)\s*:\s*(?<EndSeconds>\d+)\s*\]";
 
             subtitleOut = "[<<StartHours>>:<<StartMinutes>>:<<StartSeconds>>]\n" +
-                "<<Text>>\n" +
-                "[<<EndHours>>:<<EndMinutes>>:<<EndSeconds>>]\n";
+                          "<<Text>>\n" +
+                          "[<<EndHours>>:<<EndMinutes>>:<<EndSeconds>>]\n";
 
             bodyEndIn = @"\[\s*end\s*\]\s*\**\s*END\s*SCRIPT\s*\**";
 
@@ -61,12 +61,12 @@ namespace SubLib.IO.SubtitleFormats
         {
             Headers headers = subtitleProperties.Headers;
             return "[TITLE]\n" + headers.Title + "\n" +
-                "[AUTHOR]\n" + headers.Author + "\n" +
-                "[SOURCE]\n" + headers.Source + "\n" +
-                "[PRG]\n" + headers.Program + "\n" +
-                "[FILEPATH]\n" + headers.FilePath + "\n" +
-                "[DELAY]\n" + headers.Delay + "\n" +
-                "[CD TRACK]\n" + headers.CDTrack + "\n";
+                   "[AUTHOR]\n" + headers.Author + "\n" +
+                   "[SOURCE]\n" + headers.Source + "\n" +
+                   "[PRG]\n" + headers.Program + "\n" +
+                   "[FILEPATH]\n" + headers.FilePath + "\n" +
+                   "[DELAY]\n" + headers.Delay + "\n" +
+                   "[CD TRACK]\n" + headers.CDTrack + "\n";
         }
 
     }

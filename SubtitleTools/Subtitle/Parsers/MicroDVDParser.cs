@@ -14,91 +14,83 @@ namespace SubtitleTools
         private readonly char[] _lineSeparators = { '|' };
 
         public float DefaultFrameRate { get; set; } = 23.976f;
+
         public string FileExtension { get; set; } = ".sub";
 
-        public bool Parse(Stream stream, out Subtitle result)
+        public bool IsSupported(string input)
         {
-            var subStream = new StreamReader(stream).BaseStream;
+            if (string.IsNullOrEmpty(input)) return false;
+            input = input.Trim();
+            input = Utils.ReplaceNewLine(input);
 
-            if (!subStream.CanRead || !subStream.CanSeek)
+            Regex re = new Regex(@"\{(\d+)\}\{(\d+)\}([^\r\n]+)");
+            Match match = re.Match(input);
+            int i = 0;
+            while (match.Success)
             {
-                result = null;
-                return false;
+                i++;
+                if (i == 3) break;
+                match = match.NextMatch();
             }
+            return i == 3;
+        }
 
-            subStream.Position = 0;
-            var reader = new StreamReader(subStream, true);
-
+        public bool Parse(string input, ref ISubtitle result)
+        {
             var items = new List<Dialogue>();
-            var line = reader.ReadLine();
-            while (line != null && !IsMicroDvdLine(line))
-            {
-                line = reader.ReadLine();
-            }
 
-            if (line != null)
+            using (var reader = new StringReader(input))
             {
-                float frameRate;
-                var firstItem = ParseLine(line, DefaultFrameRate);
-                if (firstItem.Text != null && firstItem.Text.Any())
+                var line = reader.ReadLine();
+                while (line != null && !IsMicroDvdLine(line))
                 {
-                    var success = TryExtractFrameRate(firstItem.Text, out frameRate);
-                    if (!success)
+                    line = reader.ReadLine();
+                }
+
+                if (line != null)
+                {
+                    float frameRate;
+                    var firstItem = ParseLine(line, DefaultFrameRate);
+                    if (firstItem.Text != null && firstItem.Text.Any())
+                    {
+                        var success = TryExtractFrameRate(firstItem.Text, out frameRate);
+                        if (!success)
+                        {
+                            frameRate = DefaultFrameRate;
+                            items.Add(firstItem);
+                        }
+                    }
+                    else
                     {
                         frameRate = DefaultFrameRate;
-
-                        items.Add(firstItem);
-                    }
-                }
-                else
-                {
-                    frameRate = DefaultFrameRate;
-                }
-
-                line = reader.ReadLine();
-                while (line != null)
-                {
-                    if (!string.IsNullOrEmpty(line))
-                    {
-                        var item = ParseLine(line, frameRate);
-                        item.Id = $"{items.Count + 1}";
-                        items.Add(item);
                     }
 
                     line = reader.ReadLine();
+                    while (line != null)
+                    {
+                        if (!string.IsNullOrEmpty(line))
+                        {
+                            var item = ParseLine(line, frameRate);
+                            item.Id = $"{items.Count + 1}";
+                            items.Add(item);
+                        }
+
+                        line = reader.ReadLine();
+                    }
                 }
             }
 
             if (items.Any())
             {
-                result = Utils.RemoveDuplicateItems(items);
+                var list = Utils.RemoveDuplicateItems(items);
+                foreach(var d in list)
+                {
+                    result.Add(d);
+                }
                 return true;
             }
 
-            result = null;
             return false;
-        }
-
-        private string ConvertString(string str)
-        {
-            str = str.Replace("<br>", "\n");
-            str = str.Replace("<BR>", "\n");
-            str = str.Replace("&nbsp;", "");
-            try
-            {
-                while (str.IndexOf("<", StringComparison.Ordinal) != -1)
-                {
-                    var i = str.IndexOf("<", StringComparison.Ordinal);
-                    var j = str.IndexOf(">", StringComparison.Ordinal);
-                    str = str.Remove(i, j - i + 1);
-                }
-
-                return str;
-            }
-            catch
-            {
-                return str;
-            }
         }
 
         private bool IsMicroDvdLine(string line)
@@ -121,7 +113,7 @@ namespace SubtitleTools
             var text = match.Groups[^1].Value;
             var lines = text.Split(_lineSeparators);
             var nonEmptyLines = lines.Where(l => !string.IsNullOrEmpty(l)).ToList();
-            var item = new Dialogue("", start, end, ConvertString(string.Join("\r\n", nonEmptyLines.ToArray())));
+            var item = new Dialogue("", start, end, string.Join("\r\n", nonEmptyLines.ToArray()).Trim());
 
             return item;
         }
@@ -130,8 +122,7 @@ namespace SubtitleTools
         {
             if (!string.IsNullOrEmpty(text))
             {
-                var success = float.TryParse(text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture,
-                    out frameRate);
+                var success = float.TryParse(text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out frameRate);
                 return success;
             }
 

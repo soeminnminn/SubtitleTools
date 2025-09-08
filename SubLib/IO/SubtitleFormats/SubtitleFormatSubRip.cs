@@ -41,8 +41,8 @@ namespace SubLib.IO.SubtitleFormats
             subtitleIn = @"(\d*[^\n]*\n)?((?<StartHours>\d+)[^\d\n]+)?(?<StartMinutes>\d+)[^\d\n]+(?<StartSeconds>\d+)([^\d\n](?<StartMilliseconds>\d+))?[^\d\n]+((?<EndHours>\d+)[^\d\n]+)?(?<EndMinutes>\d+)[^\d\n]+(?<EndSeconds>\d+)([^\d\n](?<EndMilliseconds>\d+))?[^\d\n]*(\n(?<Text>(.*(?!\n[ \f\r\t\v]*\d+[ \f\r\t\v]*\n\d+(\s*:\s*\d+){2})\n?)*.))?";
 
             subtitleOut = "<<SubtitleNumber>>\n" +
-                "<<StartHours>>:<<StartMinutes>>:<<StartSeconds>>,<<StartMilliseconds>> --> <<EndHours>>:<<EndMinutes>>:<<EndSeconds>>,<<EndMilliseconds>>\n" +
-                "<<Style>><<Text>><<EndOfStyle>>\n";
+                          "<<StartHours>>:<<StartMinutes>>:<<StartSeconds>>,<<StartMilliseconds>> --> <<EndHours>>:<<EndMinutes>>:<<EndSeconds>>,<<EndMilliseconds>>\n" +
+                          "<<Style>><<Text>><<EndOfStyle>>\n";
         }
 
         internal override string StyleToString(Style style)

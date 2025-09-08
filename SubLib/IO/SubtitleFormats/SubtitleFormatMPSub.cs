@@ -63,11 +63,11 @@ namespace SubLib.IO.SubtitleFormats
             Headers headers = subtitleProperties.Headers;
             string format = (fileProperties.TimingMode == TimingMode.Times ? "TIME" : subtitleProperties.CurrentFrameRate.ToString());
             return "TITLE=" + headers.Title + "\n" +
-                "FILE=" + headers.MPSubFileProperties + "\n" +
-                "AUTHOR=" + headers.Author + "\n" +
-                "TYPE=" + headers.MPSubMediaType + "\n" +
-                "FORMAT=" + format + "\n" +
-                "NOTE=" + headers.Comment + "\n\n";
+                   "FILE=" + headers.MPSubFileProperties + "\n" +
+                   "AUTHOR=" + headers.Author + "\n" +
+                   "TYPE=" + headers.MPSubMediaType + "\n" +
+                   "FORMAT=" + format + "\n" +
+                   "NOTE=" + headers.Comment + "\n\n";
         }
 
     }

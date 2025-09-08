@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace SubtitleTools
@@ -10,48 +11,61 @@ namespace SubtitleTools
     {
         public string FileExtension { get; set; } = ".xml|.ttml";
 
-        public bool Parse(Stream stream, out Subtitle result)
+        public bool IsSupported(string input)
         {
-            var xmlStream = new StreamReader(stream).BaseStream;
-            xmlStream.Position = 0;
+            if (string.IsNullOrEmpty(input)) return false;
+            input = input.Trim();
+
+            Regex re = new Regex(@"^<tt\s[a-z:=\""\s]*xmlns=\""http:\/\/www\.w3\.org\/ns\/ttml\""[a-z:=\""\s]*>", RegexOptions.IgnoreCase);
+            return re.IsMatch(input);
+        }
+
+        public bool Parse(string input, ref ISubtitle result)
+        {
             var items = new List<Dialogue>();
 
-            var xElement = XElement.Load(xmlStream);
-            var tt = xElement.GetNamespaceOfPrefix("tt") ?? xElement.GetDefaultNamespace();
-
-            var nodeList = xElement.Descendants(tt + "p").ToList();
-            foreach (var node in nodeList)
+            using (var textReader = new StringReader(input))
             {
-                try
-                {
-                    var reader = node.CreateReader();
-                    reader.MoveToContent();
-                    var beginString = node.Attribute("begin").Value.Replace("t", "");
-                    var startTicks = ParseTimecode(beginString);
-                    var endString = node.Attribute("end").Value.Replace("t", "");
-                    var endTicks = ParseTimecode(endString);
-                    var text = reader.ReadInnerXml()
-                        .Replace("<tt:", "<")
-                        .Replace("</tt:", "</")
-                        .Replace(string.Format(@" xmlns:tt=""{0}""", tt), "")
-                        .Replace(string.Format(@" xmlns=""{0}""", tt), "");
+                var xElement = XElement.Load(textReader);
+                var tt = xElement.GetNamespaceOfPrefix("tt") ?? xElement.GetDefaultNamespace();
 
-                    items.Add(new Dialogue($"{items.Count + 1}", startTicks, endTicks, ConvertString(text)));
-                }
-                catch
+                var nodeList = xElement.Descendants(tt + "p").ToList();
+                foreach (var node in nodeList)
                 {
-                    result = null;
-                    return false;
+                    try
+                    {
+                        var reader = node.CreateReader();
+                        reader.MoveToContent();
+                        var beginString = node.Attribute("begin").Value.Replace("t", "");
+                        var startTicks = ParseTimecode(beginString);
+                        var endString = node.Attribute("end").Value.Replace("t", "");
+                        var endTicks = ParseTimecode(endString);
+                        var text = reader.ReadInnerXml()
+                            .Replace("<tt:", "<")
+                            .Replace("</tt:", "</")
+                            .Replace(string.Format(@" xmlns:tt=""{0}""", tt), "")
+                            .Replace(string.Format(@" xmlns=""{0}""", tt), "");
+
+                        items.Add(new Dialogue($"{items.Count + 1}", startTicks, endTicks, text.Trim()));
+                    }
+                    catch
+                    {
+                        result = null;
+                        return false;
+                    }
                 }
-            }
+            }            
 
             if (items.Any())
             {
-                result = Utils.RemoveDuplicateItems(items);
+                var list = Utils.RemoveDuplicateItems(items);
+                foreach (var d in list)
+                {
+                    result.Add(d);
+                }
                 return true;
             }
 
-            result = null;
             return false;
         }
 
@@ -70,30 +84,6 @@ namespace SubtitleTools
             }
 
             return -1;
-        }
-
-        private string ConvertString(string str)
-        {
-            str = str.Replace("<br />", "\r\n");
-            str = str.Replace("<BR />", "\r\n");
-            str = str.Replace("<br>", "\r\n");
-            str = str.Replace("<BR>", "\r\n");
-
-            try
-            {
-                while (str.IndexOf("<", StringComparison.Ordinal) != -1)
-                {
-                    var i = str.IndexOf("<", StringComparison.Ordinal);
-                    var j = str.IndexOf(">", StringComparison.Ordinal);
-                    str = str.Remove(i, j - i + 1);
-                }
-
-                return str;
-            }
-            catch
-            {
-                return str;
-            }
         }
     }
 }
