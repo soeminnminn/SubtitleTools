@@ -6,7 +6,6 @@
         xmlns:local="clr-namespace:SubtitleTools.UI"
         xmlns:viewmodels="clr-namespace:SubtitleTools.UI.ViewModels" 
         xmlns:ctrl="clr-namespace:SubtitleTools.UI.Controls"
-        xmlns:vlc="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
         d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
         Title="Subtitle Tools" 
@@ -309,11 +308,7 @@
                     </Grid.RowDefinitions>
                     
                     <Grid Background="Black">
-                        <vlc:VideoView x:Name="vlcPlayer" Visibility="Hidden">
-                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8" Background="Transparent">
-                                <TextBlock Foreground="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}">No video</TextBlock>
-                            </StackPanel>
-                        </vlc:VideoView>
+                        
                     </Grid>
 
                     <Border Grid.Row="1" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="1,0,1,1">

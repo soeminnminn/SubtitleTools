@@ -22,6 +22,12 @@ namespace SubtitleTools
             ":", ",", ".", "?"
         };
 
+        internal const string singleQuotes = "`\u0027\u0060\u00B4\u02B9\u02BB\u02BC\u02BD\u02BE\u02BF\u02C8\u02CA\u02CB\u0300\u0301\u0309\u030D\u031B\u0312\u0313\u0314\u0315\u0340\u0341\u0343\u0351\u0357\u0374\u0384\u0559\u055A\u055B\u055D\u1FEF\u1FFD\u1FFE\u2018\u2019\u201B\u2032";
+        internal const string doubleQuotes = "\u0022\u02BA\u02DD\u02EE\u030B\u030E\u030F\u201C\u201D\u201F\u2033";
+        internal const string commas = "\u002C\u00B8\u02CF\u02DB\u0316\u0317\u031C\u0321\u0322\u0326\u0327\u0328\u0329\u0339\u0375\u201A";
+        internal const string semicolons = "\u003B\u037E";
+        internal const string colons = "\u003A\u02D0\u02F8\u0589\u05C3";
+
         internal static readonly ReplaceCondition[] iOrlFixRe = new ReplaceCondition[]
         {
             new ReplaceCondition(new Regex(@"([a-z])['`’]II([:;!,\.\?\-\'\""\s…”])"), "$1`ll$2"),
@@ -69,9 +75,9 @@ namespace SubtitleTools
             new ReplaceCondition(new Regex(@"([0-9]+)\s([0-9]+)"), "$1$2"),
 
             new ReplaceCondition(new Regex(@"([a-zA-Z])\s([:;!,\.\?\-\'…])"), "$1$2"),
-            // new ReplaceCondition(new Regex(@"([a-zA-Z]+)\""([^\""]+)\s?$"), "$1\"$2\""),
-            // new ReplaceCondition(new Regex(@"([a-zA-Z]+)\""([^\""]+)$"), "$1 \"$2"),
-            // new ReplaceCondition(new Regex(@"([a-zA-Z]+)\s?\""([^\""]+)\"""), "$1 \"$2\""),
+
+            new ReplaceCondition(new Regex(@"([^\""]+)\""([^\""]+)\s?$"), "$1 \"$2"),
+            new ReplaceCondition(new Regex(@"([^\""]+)\""([^\""]+)\"""), "$1 \"$2\""),
 
             new ReplaceCondition(new Regex(@"([Ii])['’`]m"), "I`m"),
             new ReplaceCondition(new Regex(@"([Mm]a)['’`]am"), "$1`am"),

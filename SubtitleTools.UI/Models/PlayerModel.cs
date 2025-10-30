@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
-using LibVLCSharp.Shared;
 using SubtitleTools.UI.Helpers;
 
 namespace SubtitleTools.UI.Models
 {
+#if VLC
     internal class PlayerModel : IDisposable
     {
         #region Variables
@@ -24,7 +24,7 @@ namespace SubtitleTools.UI.Models
         #endregion
 
         #region Properties
-        public MediaPlayer Player
+        public LibVLCSharp.Shared.MediaPlayer Player
         {
             get => player;
         }
@@ -48,9 +48,9 @@ namespace SubtitleTools.UI.Models
                 };
 
 #if DEBUG
-                LibVLC libVlc = new(true, options.ToArray());
+                LibVLCSharp.Shared.LibVLC libVlc = new(true, options.ToArray());
 #else
-                LibVLC libVlc = new(false, options.ToArray());
+                LibVLCSharp.Shared.LibVLC libVlc = new(false, options.ToArray());
 #endif
                 return libVlc;
             });
@@ -77,7 +77,7 @@ namespace SubtitleTools.UI.Models
                     player.Stop();
                 }
 
-                var media = new Media(vlcLib, filePath, FromType.FromPath);
+                var media = new LibVLCSharp.Shared.Media(vlcLib, filePath, LibVLCSharp.Shared.FromType.FromPath);
                 player.Media = media;
             }
             catch (Exception e)
@@ -150,5 +150,16 @@ namespace SubtitleTools.UI.Models
             }
         }
         #endregion
+    }
+#endif
+
+    internal class PlayerModel : IDisposable
+    {
+        public PlayerModel() { }
+
+        public void Dispose()
+        {
+
+        }
     }
 }

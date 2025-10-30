@@ -26,13 +26,20 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="LibVLCSharp" Version="3.8.2" />
-    <PackageReference Include="LibVLCSharp.WPF" Version="3.8.2" />
-    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.20" />
+    <PackageReference Include="mpv" Version="0.28.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SubtitleTools\SubtitleTools.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="libmpv\Win32\mpv-1.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="libmpv\x64\mpv-1.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

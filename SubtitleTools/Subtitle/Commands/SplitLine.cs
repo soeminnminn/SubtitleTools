@@ -40,40 +40,52 @@ namespace SubtitleTools.Commands
                 var tArr = Regex.Replace(text, @"([\?\.!…]+)[\s]+", "$1\n").SplitRegex(@"\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
                 var tLen = tArr.Length;
 
-                var noneSingle = tArr.Where(x => !Regex.IsMatch(x.Trim(), @"^[\s\?\.!…¶♪♫]+$")).ToArray();
+                var noneSingle = tArr.Where(x => !Regex.IsMatch(x.Trim(), @"^[\s\?\.!…¶♪♫\""]+$")).ToArray();
 
-                if (tLen > 1 && noneSingle.Length == 1)
+                if (tLen > 1)
                 {
-                    list = new string[1];
-                    list[0] = tArr[0].Trim();
-
-                    for (int i = 1; i < tArr.Length; i++)
+                    if (noneSingle.Length == 1)
                     {
-                        if (Regex.IsMatch(tArr[i].Trim(), @"^[\s\?\.!…]+$"))
+                        list = new string[1];
+                        list[0] = tArr[0].Trim();
+
+                        for (int i = 1; i < tArr.Length; i++)
                         {
-                            list[0] += tArr[i].Trim();
-                        }
-                        else
-                        {
-                            list[0] += " " + tArr[i].Trim();
+                            if (Regex.IsMatch(tArr[i].Trim(), @"^[\s\?\.!…]+$"))
+                            {
+                                list[0] += tArr[i].Trim();
+                            }
+                            else
+                            {
+                                list[0] += " " + tArr[i].Trim();
+                            }
                         }
                     }
-                }
-                else if (tLen == 2)
-                {
-                    list = new string[2];
-                    list[0] = tArr[0].Trim();
-                    list[1] = tArr[1].Trim();
-                }
-                else if (tLen > 2)
-                {
-                    list = new string[2];
-                    list[0] = tArr[0].Trim() + " " + tArr[1].Trim();
-
-                    for (int i = 2; i < tArr.Length; i++)
+                    else if (noneSingle.Length > 1)
                     {
-                        list[1] += " " + tArr[i].Trim();
+                        int fIdx = Array.IndexOf(tArr, noneSingle[0]);
+                        int sIdx = Array.IndexOf(tArr, noneSingle[1]);
+
+                        list = new string[2];
+                        list[0] = string.Empty;
+                        list[1] = string.Empty;
+
+                        for (int i = 0; i < tArr.Length; i++)
+                        {
+                            if (i <= fIdx)
+                            {
+                                list[0] += " " + tArr[i].Trim();
+                            }
+                            if (i >= sIdx)
+                            {
+                                list[1] += " " + tArr[i].Trim();
+                            }
+                        }
+
+                        list[0] = list[0].Trim();
+                        list[1] = list[1].Trim();
                     }
+                    
                 }
             }
 

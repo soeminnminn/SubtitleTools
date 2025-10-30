@@ -223,6 +223,8 @@ namespace SubtitleTools
                     return $"{tok.value} ";
                 else if ((options & TokenTypes.DLG_START) == tok.tokenType)
                     return $"\n{tok.value} ";
+                else if ((options & TokenTypes.DIALOUGE) == tok.tokenType)
+                    return $"{tok.value} ";
                 else if ((options & tok.tokenType) == tok.tokenType)
                     return $"{tok.value} ";
 
@@ -230,9 +232,7 @@ namespace SubtitleTools
 
             }).Join("")
                 .ReplaceRegex(@"[\n]{2,}", "\n")
-                .ReplaceRegex(@"[ ]{2,}", " ")
-                // .ReplaceRegex(@"[ ][\b]", "")
-                .ReplaceRegex(@"([0-9])([:\.])\s([0-9])", "$1$2$3");
+                .ReplaceRegex(@"[ ]{2,}", " ");
 
             return str.Split('\n').Select(x => x.Trim()).Join("\r\n").Trim();
         }

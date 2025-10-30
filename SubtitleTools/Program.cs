@@ -113,27 +113,21 @@ namespace SubtitleTools
         
         static void Test()
         {
-            //var rep = new ReplaceCondition(new Regex(@"([\s\""\'``’])([A-Zl]{3,})([:;!,\.\?\-\'\""`\s…”])"), (Match m, string input) =>
+            //StringBuilder builder = new StringBuilder();
+
+            //for (int i = 0; i < text.Length; i++)
             //{
-            //    var v = m.Groups[2].Value.Replace('l', 'I').ToUpperInvariant();
-            //    return $"{m.Groups[1].Value}{v}{m.Groups[3].Value}";
-            //});
-
-            //string s = @"It's right here. LlGHT, Hl, Hello there, here.";
-            //var t = rep.Replace(s);
-
-            //var d = new Dialogue(0, s);
-
-            //var cmd = new Commands.SplitLine();
-            //cmd.Execute(ref d);
-            // var tokens = Tokenizer.Tokenize(s);
-
-            //string t = Regex.Replace("    ", @"^[\s]+$", "");
-
-            var re = new Regex(@"([\.\?\-\'\""`\s])(S)\.([A-Z])([A-Za-z]+)([:;!,\.\?\-\'\""`\s…])");
-            string t = re.Replace(" S.Leon ", "$1$2·$3$4$5");
-
-            //var f = string.IsNullOrWhiteSpace("");
+            //    var ch = (int)text[i];
+            //    if (ch < 255)
+            //    {
+            //        builder.Append(text[i]);
+            //    }
+            //    else
+            //    {
+            //        builder.AppendFormat("\\u{0:X4}", ch);
+            //    }                    
+            //}
+            //Console.WriteLine(builder.ToString());
         }
 
         class ParsingTarget

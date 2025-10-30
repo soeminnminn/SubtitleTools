@@ -54,7 +54,7 @@ namespace SubtitleTools
         internal static readonly Regex htmlTagRe = new Regex(@"^<[^>]+>$");
         internal static readonly Regex noneDlgRe = new Regex(@"^\([^\(]+\)|\[[^\]]+\]|\{[^\{\}]+\}$");
         internal static readonly Regex beforeColonRe = new Regex(@"^([^:]+:)");
-        internal static readonly Regex songTagRe = new Regex(@"[¶♪♫]+");
+        internal static readonly Regex songTagRe = new Regex(@"[♪♫]+");
         internal static readonly Regex speratorCharRe = new Regex(@"([^\.\?!;,…]*[\.\?!;,…]+)");
 
         internal static readonly Regex urlRegex = new Regex(@"(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])", RegexOptions.IgnoreCase);
@@ -67,7 +67,7 @@ namespace SubtitleTools
             "ALL", "ANCHOR", "ANGENT", "BOTH", "BOY", "COMMENTATOR", "COMPUTER", "FEMALE", "GIRL",
             "KID", "LOUDSPEAKER", "MAID", "MALE", "MAN", "MEN", "MUSIC", "NARRATOR", "PHONE",
             "RADIO", "RECORDING", "REPORTER", "SENIOR", "SOLDER", "SONG", "STAMMERS", "TV",
-            "TEACHER", "VOICE", "WHISPERS", "WOMAN",
+            "TEACHER", "VOICE", "WHISPERS", "WOMAN", "VOICE-OVER", "VOICE-MAIL", "CELL PHONE",
         };
 
         internal readonly static string[] tokenReParts = new string[]
@@ -93,9 +93,6 @@ namespace SubtitleTools
             // song '¶ xxx ¶', '♪ xxx ♪', '♫ xxx ♫'
             songTagRe.ToString(),
             
-            //// song ' * xxx *', ' # xxx #'
-            //@"\s[\*#]+",
-            
             // dialog start '- xx'
             @"\s-\s",
 
@@ -105,7 +102,7 @@ namespace SubtitleTools
 
         internal static readonly Regex tokenRe = new Regex($"({tokenReParts.Join("|")})", RegexOptions.Compiled);
 
-        internal static readonly ReplaceCondition[] preTokenRe = new ReplaceCondition[]
+        internal static readonly ReplaceCondition[] preTokenReplace = new ReplaceCondition[]
         {
             new ReplaceCondition(new Regex(@"\\[Nn]"), "\n"),
             new ReplaceCondition(new Regex(@"\\h"), " "),
@@ -114,10 +111,33 @@ namespace SubtitleTools
 
             new ReplaceCondition(urlRegex, "<url href=\"$1\">"),
 
-            new ReplaceCondition(new Regex(@"([“”‟″\""]+)"), "\""),
+            new ReplaceCondition(" 1/4 ", " ¼ "),
+            new ReplaceCondition(" 1/2 ", " ½ "),
+            new ReplaceCondition(" 3/4 ", " ¾ "),
+            new ReplaceCondition(" 1/3 ", " ⅓ "),
+            new ReplaceCondition(" 2/3 ", " ⅔ "),
+            new ReplaceCondition(" 1/8 ", " ⅛ "),
+            new ReplaceCondition(" 3/8 ", " ⅜ "),
+            new ReplaceCondition(" 5/8 ", " ⅝ "),
+            new ReplaceCondition(" 7/8 ", " ⅞ "),
 
-            new ReplaceCondition(new Regex(@"([‘’‛′\'`]+)"), "'"),
+            // * xxx * | # xxx # | ¶ xxx ¶ --> ♪ xxx ♪
+            new ReplaceCondition(new Regex(@"(^[\s]+[\*#][\s])|([\s][\*#¶][\s]+$)"), " ♪ "),
+            // ♪ xxx --> ♪ xxx ♪
+            new ReplaceCondition(new Regex(@"^([\s]+♪[\s])([^♪]+)[\s]+$"), "$1$2 ♪ "),
+            // xxx ♪ --> ♪ xxx ♪
+            new ReplaceCondition(new Regex(@"^([^♪]+)([\s]+♪[\s])$"), " ♪ $1$2"),
 
+            new ReplaceCondition(ToolsConstants.singleQuotes.ToCharArray(), "\'"),
+            new ReplaceCondition(ToolsConstants.doubleQuotes.ToCharArray(), "\""),
+            new ReplaceCondition(ToolsConstants.commas.ToCharArray(), ","),
+            new ReplaceCondition(ToolsConstants.semicolons.ToCharArray(), ";"),
+            new ReplaceCondition(ToolsConstants.colons.ToCharArray(), ":"),
+
+            // I 'm --> I'm
+            new ReplaceCondition(new Regex(@"([a-zA-Z])[\s]+([\'])([a-zA-Z]+)"), "$1$2$3"),
+
+            // -Hello --> - Hello
             new ReplaceCondition(new Regex(@"([\.\?\'\""\s])-([a-zA-Z])"), "$1- $2"),
 
             //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5·$6·$7·$8$9"),
@@ -126,22 +146,11 @@ namespace SubtitleTools
             //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5$6"),
             //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4$5"),
 
-            new ReplaceCondition(new Regex(@"([0-9]+)\s?:\s?([0-9]+)"), "$1∶$2"),
-            // new ReplaceCondition(new Regex(@"([a-zA-Z]+)\s?\""([^\""]+)\"""), "$1 “$2”"),
-            new ReplaceCondition(new Regex(@"([a-zA-Z]+)([;!,\.\?])([\""”])(\s)"), "$1$3$2$4"),
-        };
+            // 0: 000 --> 0:000 | 0. 000 --> 0.000
+            new ReplaceCondition(new Regex(@"([0-9]+)\s?([:\.])\s?([0-9]+)"), "$1$2$3"),
 
-        internal static readonly ReplaceCondition[] preTokenReplace = new ReplaceCondition[]
-        {
-            new ReplaceCondition("1/4", "¼"),
-            new ReplaceCondition("1/2", "½"),
-            new ReplaceCondition("3/4", "¾"),
-            new ReplaceCondition("1/3", "⅓"), 
-            new ReplaceCondition("2/3", "⅔"), 
-            new ReplaceCondition("1/8", "⅛"),
-            new ReplaceCondition("3/8", "⅜"),
-            new ReplaceCondition("5/8", "⅝"),
-            new ReplaceCondition("7/8", "⅞")
+            // hello"… --> hello…"
+            // new ReplaceCondition(new Regex(@"([a-zA-Z]+)([\""])([…])(\s)"), "$1$3$2$4"),
         };
         #endregion
 
@@ -197,7 +206,7 @@ namespace SubtitleTools
         public static Token[] Tokenize(string input)
         {
             string text = " " + input.Trim().EscapeDot() + " ";
-            foreach (var rep in preTokenRe)
+            foreach (var rep in preTokenReplace)
             {
                 text = rep.Replace(text);
             }
@@ -208,11 +217,6 @@ namespace SubtitleTools
                 return match.Value.Replace(',', '‚');
             });
 
-            foreach (var rep in preTokenReplace)
-            {
-                text = rep.Replace(text);
-            }
-            text = " " + text.Trim() + " ";
             text = text.ReplaceRegex(@"[ ]+", " ");
 
             var arr = new List<string>();

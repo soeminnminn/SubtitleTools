@@ -218,6 +218,15 @@ namespace SubtitleTools
             return new string[0];
         }
 
+        public static string[] SplitChars(this string input)
+        {
+            if (!string.IsNullOrEmpty(input))
+            {
+                return input.ToCharArray().Select(x => x.ToString()).ToArray();
+            }
+            return new string[0];
+        }
+
         public static string TrimWhitespace(this string input)
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
