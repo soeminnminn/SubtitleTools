@@ -95,7 +95,7 @@ namespace SubtitleTools
             new ReplaceCondition(new Regex(@"([A-Za-z]+)(\)')"), "$1y"),
         };
 
-        internal static readonly Regex newLineRe = new Regex(@"\r?\n");
+        internal static readonly Regex newLineRe = new Regex(@"\r\n|\r|\n");
         internal static readonly Regex trimWhitespaceStartRe = new Regex(@"^[\s]+");
         internal static readonly Regex trimWhitespaceEndRe = new Regex(@"[\s]+$");
 
@@ -107,6 +107,7 @@ namespace SubtitleTools
             new ReplaceCondition(new Regex(@"[‒-―‥]+"), "…"),
             new ReplaceCondition(new Regex(@"([a-zA-Z0-9])[-]{2,}([:;!,\.\?\'\""`\s])"), "$1…$2"),
             new ReplaceCondition(new Regex(@"([a-zA-Z])[-]{2,}"), "$1…"),
+            new ReplaceCondition(new Regex(@"[…\.]{2,}"), "…"),
 
             new ReplaceCondition(new Regex(@"([\.\?\-\'\""\s])M([rs]s?)\s?\.", RegexOptions.IgnoreCase), "$1M$2·"),
             new ReplaceCondition(new Regex(@"([\.\?\-\'\""\s])(Dr)\s?\.", RegexOptions.IgnoreCase), "$1Dr·"),

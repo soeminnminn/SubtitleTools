@@ -28,32 +28,32 @@ namespace SubtitleTools.Commands
             for (int i = 0; i < tokens.Length; i++)
             {
                 var token = tokens[i];
-                if ((TokenTypes.ANY_DLG & token.tokenType) == token.tokenType)
+                if ((TokenTypes.ANY_DLG & token.TokenType) == token.TokenType)
                 {
-                    if (token.tokenType.HasFlag(TokenTypes.DLG_START))
+                    if (token.TokenType.HasFlag(TokenTypes.DLG_START))
                     {
                         if (i + 1 == tokens.Length)
-                            token.tokenType = TokenTypes.EMPTY;
+                            token.TokenType = TokenTypes.EMPTY;
                         else if (i + 1 < tokens.Length)
                         {
                             var next = tokens[i + 1];
-                            if (next.tokenType.HasFlag(TokenTypes.NEW_LINE) || next.tokenType.HasFlag(TokenTypes.DLG_START))
-                                token.tokenType = TokenTypes.EMPTY;
+                            if (next.TokenType.HasFlag(TokenTypes.NEW_LINE) || next.TokenType.HasFlag(TokenTypes.DLG_START))
+                                token.TokenType = TokenTypes.EMPTY;
                         }
                     }
                     else if (tokens.Length == 1)
                     {
-                        string temp = token.value;
+                        string temp = token.Value;
                         foreach (var ch in ToolsConstants.specialChars)
                         {
                             temp = temp.Replace(ch, "");
                         }
                         if (temp.Trim().Length == 0)
-                            token.tokenType = TokenTypes.EMPTY;
+                            token.TokenType = TokenTypes.EMPTY;
                     }
                 }
 
-                if (token.tokenType != TokenTypes.EMPTY)
+                if (token.TokenType != TokenTypes.EMPTY)
                     list.Add(token);
             }
 

@@ -128,6 +128,15 @@ namespace SubtitleTools
             //    }                    
             //}
             //Console.WriteLine(builder.ToString());
+
+            string input = "The quick \"brown fox\"` jump \"over lazy` dog.";
+
+            var sl = new StringLiteralMatcher(input);
+
+            while(sl.MoveNext())
+            {
+                Console.WriteLine($"[{sl.Current}]");
+            }
         }
 
         class ParsingTarget

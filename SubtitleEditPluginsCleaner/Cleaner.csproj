@@ -80,6 +80,9 @@
     <Compile Include="..\SubtitleTools\Subtitle\ReplaceCondition.cs">
       <Link>Subtitle\ReplaceCondition.cs</Link>
     </Compile>
+    <Compile Include="..\SubtitleTools\Subtitle\StringLiteral.cs">
+      <Link>Subtitle\StringLiteral.cs</Link>
+    </Compile>
     <Compile Include="..\SubtitleTools\Subtitle\Styler.cs">
       <Link>Subtitle\Styler.cs</Link>
     </Compile>

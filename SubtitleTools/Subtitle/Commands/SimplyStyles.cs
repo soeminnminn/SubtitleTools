@@ -31,35 +31,35 @@ namespace SubtitleTools.Commands
             for (int i = 0; i < tokens.Length; i++)
             {
                 var token = tokens[i];
-                if (token.tokenType == TokenTypes.SSA_TAG)
+                if (token.TokenType == TokenTypes.SSA_TAG)
                 {
-                    if (Regex.IsMatch(token.value, @"\{i[0-9]?\}"))
+                    if (Regex.IsMatch(token.Value, @"\{i[0-9]?\}"))
                     {
-                        types.Add(token.tokenType);
+                        types.Add(token.TokenType);
                     }
-                    else if (token.value.Contains(@"{\an8}"))
+                    else if (token.Value.Contains(@"{\an8}"))
                     {
                         var style = new StyleTag("an", StyleTypes.ssaTag);
                         style.attrs.Add("value", "8");
 
                         dialogue.Styles.Add(style);
                     }
-                    token.tokenType = TokenTypes.EMPTY;
+                    token.TokenType = TokenTypes.EMPTY;
                 }
-                else if (token.tokenType == TokenTypes.HTML_TAG)
+                else if (token.TokenType == TokenTypes.HTML_TAG)
                 {
-                    if (Regex.IsMatch(token.value, @"<\/?i>", RegexOptions.IgnoreCase))
+                    if (Regex.IsMatch(token.Value, @"<\/?i>", RegexOptions.IgnoreCase))
                     {
-                        types.Add(token.tokenType);
+                        types.Add(token.TokenType);
                     }
-                    token.tokenType = TokenTypes.EMPTY;
+                    token.TokenType = TokenTypes.EMPTY;
                 }
-                else if (token.tokenType == TokenTypes.ADS || token.tokenType == TokenTypes.DIALOUGE || token.tokenType == TokenTypes.BEFORE_COLON || token.tokenType == TokenTypes.NONE_DLG || token.tokenType == TokenTypes.SONG_TAG)
+                else if (token.TokenType == TokenTypes.ADS || token.TokenType == TokenTypes.DIALOUGE || token.TokenType == TokenTypes.BEFORE_COLON || token.TokenType == TokenTypes.NONE_DLG || token.TokenType == TokenTypes.SONG_TAG)
                 {
-                    types.Add(token.tokenType);
+                    types.Add(token.TokenType);
                 }
 
-                if (token.tokenType != TokenTypes.EMPTY)
+                if (token.TokenType != TokenTypes.EMPTY)
                     list.Add(token);
             }
 

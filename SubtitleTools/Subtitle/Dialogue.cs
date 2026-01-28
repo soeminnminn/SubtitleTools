@@ -73,8 +73,8 @@ namespace SubtitleTools
         public string Id
         {
             get => id;
-            set 
-            { 
+            set
+            {
                 id = value;
                 OnPropertyChanged();
             }
@@ -83,7 +83,7 @@ namespace SubtitleTools
         public double StartTime
         {
             get => startTime;
-            set 
+            set
             {
                 startTime = value;
                 OnPropertyChanged("StartTime", "Start", "EndTime", "End", "Duration");
@@ -93,7 +93,7 @@ namespace SubtitleTools
         public double EndTime
         {
             get => startTime + duration;
-            set 
+            set
             {
                 duration = value - startTime;
                 OnPropertyChanged("StartTime", "Start", "EndTime", "End", "Duration");
@@ -132,7 +132,7 @@ namespace SubtitleTools
             get
             {
                 if (tokens.Length == 0) return 0;
-                return tokens.Where(x => x.tokenType.HasFlag(TokenTypes.NEW_LINE)).Count() + 1;
+                return tokens.Where(x => x.TokenType.HasFlag(TokenTypes.NEW_LINE)).Count() + 1;
             }
         }
 
@@ -148,8 +148,8 @@ namespace SubtitleTools
         public Token[] Tokens
         {
             get => tokens;
-            set 
-            { 
+            set
+            {
                 tokens = value;
                 OnPropertyChanged("Tokens", "Text", "LineCount", "Length", "Styles", "StyledText");
             }
@@ -190,6 +190,51 @@ namespace SubtitleTools
         #endregion
 
         #region Methods
+        private string FixQuote(string value)
+        {
+            string str = value;
+
+            if (str.IndexOf('"') > -1)
+            {
+                int halfLen = (int)Math.Ceiling((decimal)(str.Length / 2));
+                int idx = str.IndexOf('"');
+
+                int nextIdx = str.IndexOf('"', idx + 1);
+                if (nextIdx == -1)
+                {
+                    nextIdx = str.LastIndexOf('"');
+                }
+
+                if (nextIdx > idx + 2 && str[nextIdx - 1] == ' ')
+                {
+                    var len = str.Length;
+                    var temp = str.Substring(0, nextIdx - 1) + str.Substring(nextIdx, len - nextIdx);
+
+                    if (idx > 2 && str[idx - 1] != ' ')
+                    {
+                        len = len - 1;
+                        temp = str.Substring(0, idx) + " " + str.Substring(idx, len - idx);
+                    }
+
+                    str = temp;
+                }
+                else if (idx > halfLen && str[idx - 1] == ' ')
+                {
+                    var len = str.Length;
+                    var temp = str.Substring(0, idx - 1) + str.Substring(idx, len - idx);
+                    str = temp;
+                }
+                else if (idx > 1 && str[idx - 1] != ' ')
+                {
+                    var len = str.Length;
+                    var temp = str.Substring(0, idx) + " " + str.Substring(idx, len - idx);
+                    str = temp;
+                }
+            }
+
+            return str;
+        }
+
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "", params string[] propertyNames)
         {
             if (PropertyChanged != null)
@@ -209,28 +254,19 @@ namespace SubtitleTools
 
             var str = tokens.Select(tok =>
             {
-                if ((options & TokenTypes.SSA_TAG) == tok.tokenType)
-                    return tok.value;
-                else if ((options & TokenTypes.HTML_TAG) == tok.tokenType)
-                    return tok.value;
-                else if ((options & TokenTypes.NEW_LINE) == tok.tokenType)
+                if ((options & TokenTypes.NEW_LINE) == tok.TokenType)
                     return "\n";
-                else if ((options & TokenTypes.NONE_DLG) == tok.tokenType)
-                    return $"{tok.value} ";
-                else if ((options & TokenTypes.BEFORE_COLON) == tok.tokenType)
-                    return $"{tok.value} ";
-                else if ((options & TokenTypes.SONG_TAG) == tok.tokenType)
-                    return $"{tok.value} ";
-                else if ((options & TokenTypes.DLG_START) == tok.tokenType)
-                    return $"\n{tok.value} ";
-                else if ((options & TokenTypes.DIALOUGE) == tok.tokenType)
-                    return $"{tok.value} ";
-                else if ((options & tok.tokenType) == tok.tokenType)
-                    return $"{tok.value} ";
-
-                return string.Empty;
+                else if ((options & TokenTypes.DIALOUGE) == tok.TokenType)
+                    return this.FixQuote($"{tok}\b");
+                else if ((options & tok.TokenType) == tok.TokenType)
+                    return $"{tok}";
+                else
+                    return string.Empty;
 
             }).Join("")
+                .ReplaceRegex("[\\s][\b]", "")
+                .ReplaceRegex("[\b]([^\"\\.\\?!])", " $1")
+                .ReplaceRegex("[\b]", "")
                 .ReplaceRegex(@"[\n]{2,}", "\n")
                 .ReplaceRegex(@"[ ]{2,}", " ");
 
@@ -247,7 +283,7 @@ namespace SubtitleTools
             startTime += ms;
 
             OnPropertyChanged("StartTime", "Start", "EndTime", "End", "Duration");
-            
+
             return this;
         }
         #endregion

@@ -110,6 +110,8 @@ namespace SubtitleTools
                     if (!string.IsNullOrWhiteSpace(text))
                     {
                         subtitle.CurrentEncoding = reader.CurrentEncoding;
+                        text = BOM.RemoveBOM(text, reader.CurrentEncoding);
+
 #if MULTIPARSERS
                         var ext = file.Extension;
                         if (!string.IsNullOrEmpty(ext))
@@ -148,6 +150,102 @@ namespace SubtitleTools
             ISubtitle inst = new Subtitle();
             if (!FromFile(filePath, ref inst)) return null;
             return inst as Subtitle;
+        }
+        #endregion
+
+        #region Nested Types
+        private static class BOM
+        {
+            public static readonly Encoding BigEndianUTF32 = new UTF32Encoding(true, true);
+
+#pragma warning disable SYSLIB0001
+            private static readonly int[] hasBomEncodings = new int[]
+            {
+                System.Text.Encoding.UTF7.CodePage,
+                System.Text.Encoding.UTF8.CodePage,
+                System.Text.Encoding.UTF32.CodePage,
+                BigEndianUTF32.CodePage,
+                System.Text.Encoding.Unicode.CodePage,
+                System.Text.Encoding.BigEndianUnicode.CodePage,
+             };
+
+            public static readonly byte[] UTF7BOM = new byte[] { 0x2B, 0x2F, 0x76 };
+            public static readonly byte[] UTF8BOM = new byte[] { 0xEF, 0xBB, 0xBF };
+            public static readonly byte[] UTF32BOM = new byte[] { 0xFF, 0xFE, 0, 0 };
+            public static readonly byte[] BigEndianUTF32BOM = new byte[] { 0, 0, 0xFE, 0xFF };
+            public static readonly byte[] BigEndianUnicodeBOM = new byte[] { 0xFE, 0xFF };
+            public static readonly byte[] UnicodeBOM = new byte[] { 0xFF, 0xFE };
+
+            private static readonly byte[][] BOM_MARKS = new byte[][]
+            {
+                UTF7BOM,
+                UTF8BOM,
+                UTF32BOM,
+                BigEndianUTF32BOM,
+                UnicodeBOM,
+                BigEndianUnicodeBOM,
+            };
+
+            public static bool HasBOM(Encoding encoding)
+            {
+                return Array.IndexOf(hasBomEncodings, encoding.CodePage) > -1;
+            }
+
+            public static bool HasBOM(string text, Encoding encoding)
+            {
+                if (string.IsNullOrEmpty(text)) return false;
+
+                int encIdx = Array.IndexOf(hasBomEncodings, encoding.CodePage);
+                if (encIdx == -1) return false;
+
+                var strStart = text.Substring(0, Math.Min(4, text.Length - 1));
+
+                var startBytes = encoding.GetBytes(strStart);
+
+                var encBOM = BOM_MARKS[encIdx];
+                if (startBytes.Length > encBOM.Length)
+                {
+                    bool flag = true;
+                    for (int i = 0; i < encBOM.Length; i++)
+                    {
+                        flag = flag && (encBOM[i] == startBytes[i]);
+                    }
+
+                    return flag;
+                }
+
+                return false;
+            }
+
+            public static string RemoveBOM(string text, Encoding encoding)
+            {
+                if (string.IsNullOrEmpty(text)) return text;
+
+                int encIdx = Array.IndexOf(hasBomEncodings, encoding.CodePage);
+                if (encIdx == -1) return text;
+
+                var textBytes = encoding.GetBytes(text);
+
+                var encBOM = BOM_MARKS[encIdx];
+                if (textBytes.Length > encBOM.Length)
+                {
+                    int marks = 0;
+                    for (int i = 0; i < encBOM.Length; i++)
+                    {
+                        if (encBOM[i] == textBytes[i]) marks++;
+                    }
+
+                    if (marks == encBOM.Length)
+                    {
+                        byte[] tempBytes = new byte[textBytes.Length - encBOM.Length];
+                        Array.Copy(textBytes, marks, tempBytes, 0, textBytes.Length - marks);
+                        return encoding.GetString(tempBytes);
+                    }
+                }
+
+                return text;
+            }
+#pragma warning restore SYSLIB0001
         }
         #endregion
     }

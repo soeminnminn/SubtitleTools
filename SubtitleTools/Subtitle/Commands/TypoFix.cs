@@ -28,22 +28,22 @@ namespace SubtitleTools.Commands
             for (int i = 0; i < tokens.Length; i++)
             {
                 var token = tokens[i];
-                if ((TokenTypes.ANY_DLG & token.tokenType) == token.tokenType)
+                if ((TokenTypes.ANY_DLG & token.TokenType) == token.TokenType)
                 {
                     foreach (var rep in ToolsConstants.iOrlFixRe)
                     {
-                        var val = " " + token.value + " ";
+                        var val = " " + token.Value + " ";
                         val = rep.Replace(val).Trim();
 
-                        token.value = val;
+                        token.Value = val;
                     }
 
                     foreach (var rep in ToolsConstants.typoFixRe)
                     {
-                        var val = " " + token.value + " ";
+                        var val = " " + token.Value + " ";
                         val = rep.Replace(val).Trim();
 
-                        token.value = val;
+                        token.Value = val;
                     }
                 }
                 list.Add(token);

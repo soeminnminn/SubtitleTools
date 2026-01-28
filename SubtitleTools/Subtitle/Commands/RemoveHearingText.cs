@@ -27,7 +27,7 @@ namespace SubtitleTools.Commands
             if (dialogue.Tokens == null) return;
             if (dialogue.Tokens.Length == 0) return;
 
-            var ads = dialogue.Tokens.Count(t => t.tokenType.HasFlag(TokenTypes.ADS));
+            var ads = dialogue.Tokens.Count(t => t.TokenType.HasFlag(TokenTypes.ADS));
             if (ads > 0)
             {
                 dialogue.Text = string.Empty;

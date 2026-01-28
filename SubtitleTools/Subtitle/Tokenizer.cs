@@ -24,11 +24,13 @@ namespace SubtitleTools
         ALL = DIALOUGE | NEW_LINE | SSA_TAG | HTML_TAG | DLG_START | NONE_DLG | BEFORE_COLON | SONG_TAG | ADS
     }
 
-    public struct Token
+    public class Token
     {
         #region Variabels
-        public string value;
-        public TokenTypes tokenType;
+        private string value = string.Empty;
+        private TokenTypes tokenType = TokenTypes.EMPTY;
+        private string leading = string.Empty;
+        private string trailing = string.Empty;
         #endregion
 
         #region Constructors
@@ -39,10 +41,41 @@ namespace SubtitleTools
         }
         #endregion
 
+        #region Properties
+        internal static Token NewLine
+        {
+            get { return new Token("\n", TokenTypes.NEW_LINE); }
+        }
+
+        public TokenTypes TokenType
+        {
+            get => this.tokenType;
+            set { this.tokenType = value; }
+        }
+
+        public string Value
+        {
+            get => this.value;
+            set { this.value = value; }
+        }
+
+        public string Leading
+        {
+            get => this.leading;
+            internal set { this.leading = value; }
+        }
+
+        public string Trailing
+        {
+            get => this.trailing;
+            internal set { this.trailing = value; }
+        }
+        #endregion
+
         #region Methods
         public override string ToString()
         {
-            return $"Type={tokenType}, Text=\"{value}\"";
+            return $"{this.leading}{this.value}{this.trailing}";
         }
         #endregion
     }
@@ -146,8 +179,10 @@ namespace SubtitleTools
             //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5$6"),
             //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4$5"),
 
-            // 0: 000 --> 0:000 | 0. 000 --> 0.000
-            new ReplaceCondition(new Regex(@"([0-9]+)\s?([:\.])\s?([0-9]+)"), "$1$2$3"),
+            // 0: 000 --> 0∶000 | 
+            new ReplaceCondition(new Regex(@"([0-9]+)\s?[∶:]\s?([0-9]+)"), "$1∶$2"),
+            // 0. 000 --> 0·000
+            new ReplaceCondition(new Regex(@"([0-9]+)\s?[\.]\s?([0-9]+)"), "$1·$2"),
 
             // hello"… --> hello…"
             // new ReplaceCondition(new Regex(@"([a-zA-Z]+)([\""])([…])(\s)"), "$1$3$2$4"),
@@ -197,9 +232,9 @@ namespace SubtitleTools
 
         internal static void AddNewLineToken(ref List<Token> result)
         {
-            if (result.Count > 0 && result[result.Count - 1].tokenType != TokenTypes.NEW_LINE)
+            if (result.Count > 0 && result[result.Count - 1].TokenType != TokenTypes.NEW_LINE)
             {
-                result.Add(new Token("\n", TokenTypes.NEW_LINE));
+                result.Add(Token.NewLine);
             }
         }
 
@@ -253,6 +288,7 @@ namespace SubtitleTools
             });
 
             var result = new List<Token>();
+            TokenTypes prevType = TokenTypes.EMPTY;
 
             foreach (var i in arr)
             {
@@ -267,32 +303,76 @@ namespace SubtitleTools
                 {
                     x = x.ReplaceRegex(@"[\n]+", "");
 
+                    bool spaceBefore = false;
+                    bool spaceAfter = false;
+
                     if (ssaTagRe.IsMatch(x))
+                    {
                         type = TokenTypes.SSA_TAG;
+                    }
                     else if (htmlTagRe.IsMatch(x))
+                    {
                         type = TokenTypes.HTML_TAG;
+                    }
                     else if (x == "-")
                     {
                         AddNewLineToken(ref result);
                         type = TokenTypes.DLG_START;
                     }
                     else if (noneDlgRe.IsMatch(x))
+                    {
                         type = TokenTypes.NONE_DLG;
+                    }
                     else if (IsBeforeColon(x))
                     {
                         AddNewLineToken(ref result);
                         type = TokenTypes.BEFORE_COLON;
                     }
                     else if (songTagRe.IsMatch(x))
+                    {
                         type = TokenTypes.SONG_TAG;
+                    }
                     else if (IsAds(x))
+                    {
                         type = TokenTypes.ADS;
+                    }
+                    else
+                    {
+                        spaceBefore = i.StartsWith(" ");
+                        spaceAfter = i.EndsWith(" ");
+                    }
 
-                    x = urlTagRe.Replace(x, "$1");
-                    x = x.UnescapeDot();
-                    x = x.Replace('∶', ':');
+                    if (type != TokenTypes.SSA_TAG && type != TokenTypes.HTML_TAG && type != TokenTypes.DLG_START && type != TokenTypes.BEFORE_COLON)
+                    {
+                        x = urlTagRe.Replace(x, "$1");
+                        x = x.UnescapeDot();
+                    }
 
-                    result.Add(new Token(x, type));
+                    if (type == TokenTypes.SSA_TAG && type == TokenTypes.HTML_TAG && type == TokenTypes.ADS)
+                    {
+                        result.Add(new Token(x, type));
+                    }
+                    else if (type == TokenTypes.DLG_START || type == TokenTypes.BEFORE_COLON || type == TokenTypes.NONE_DLG)
+                    {
+                        result.Add(new Token(x, type) { Trailing = " " });
+                    }
+                    else if (type == TokenTypes.SONG_TAG)
+                    {
+                        result.Add(new Token(x, type)
+                        {
+                            Leading = prevType != TokenTypes.EMPTY ? " " : string.Empty,
+                            Trailing = " ",
+                        });
+                    }
+                    else
+                    {
+                        result.Add(new Token(x, type)
+                        {
+                            Leading = spaceBefore ? " " : string.Empty,
+                            Trailing = spaceAfter ? " " : string.Empty,
+                        });
+                    }
+                    prevType = type;
                 }
             }
 
