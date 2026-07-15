@@ -27,10 +27,11 @@ namespace SubtitleTools
         {
             if (!string.IsNullOrEmpty(search))
             {
+                var src = Regex.Escape(search);
                 if (ignoreCase)
-                    this.regex = new Regex(search, RegexOptions.IgnoreCase);
+                    this.regex = new Regex(src, RegexOptions.IgnoreCase);
                 else
-                    this.regex = new Regex(search);
+                    this.regex = new Regex(src);
             }
 
             this.chars = null;

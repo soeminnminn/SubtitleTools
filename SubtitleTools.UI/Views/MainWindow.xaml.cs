@@ -90,6 +90,7 @@ namespace SubtitleTools.UI.Views
         {
             Title = $"Subtitle Tools - {model.CurrentFileName}";
             CommandManager.InvalidateRequerySuggested();
+            listSubtitle.ScrollToTop();
         }
 
         private void Model_FileClosed(object sender, EventArgs e)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -11,6 +12,77 @@ namespace SubtitleTools.Commands
         #endregion
 
         #region Methods
+        private static int FindCutPoint(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return -1;
+            if (text.Length < ToolsConstants.MaxLineLength) return -1;
+
+            List<string> cutChars = new List<string>() { ". ", "? ", "! ", "… " };
+
+            int halfIdx = (int)Math.Floor(text.Length * 0.5);
+
+            if (halfIdx < ToolsConstants.MaxLineLength)
+            {
+                string temp = text.EscapeDot();
+                temp = Regex.Replace(temp, @"([^\s]),([^\s])", "$1\u05A5$2");
+
+                for (var i = halfIdx; i < ToolsConstants.MaxLineLength && i < temp.Length; i++)
+                {
+                    var check = temp[i].ToString() + temp[i + 1].ToString();
+                    if (cutChars.Contains(check))
+                    {
+                        return i + 1;
+                    }
+                }
+
+                int spaceCount = 0;
+                int fromEnd = temp.Length - ToolsConstants.MaxLineLength;
+                for (var i = halfIdx; i > fromEnd && i > 0; i--)
+                {
+                    if (temp[i] == ' ')
+                    {
+                        spaceCount++;
+                        if (spaceCount == 3) break;
+                    }
+
+                    var check = temp[i].ToString() + temp[i + 1].ToString();
+                    if (cutChars.Contains(check))
+                    {
+                        return i + 1;
+                    }
+                }
+            }
+
+            var listSP = new List<int>
+            {
+                text.Substring(0, halfIdx).LastIndexOf(' '),
+                text.IndexOf(' ', halfIdx)
+            };
+
+            int closestSP = listSP.OrderBy(item => Math.Abs(halfIdx - item)).First();
+            if (text[halfIdx] == ' ') closestSP = halfIdx;
+
+            var listCM = new List<int>
+            {
+                text.Substring(0, halfIdx).LastIndexOf(','),
+                text.IndexOf(',', halfIdx)
+            };
+            int closestCM = listCM.OrderBy(item => Math.Abs(halfIdx - item)).First();
+
+            if (closestCM < closestSP)
+            {
+                int t = text.Substring(0, closestSP - 1).LastIndexOf(' ');
+                if (closestCM == t - 1) return t;
+            }
+            else if (closestCM > closestSP)
+            {
+                int t = text.IndexOf(' ', closestSP + 1);
+                if (closestCM == t - 1) return t;
+            }
+
+            return closestSP;
+        }
+
         public bool CanExecute(ISubtitle subtitle)
         {
             return ((ICollection)subtitle).Count > 0;
@@ -35,7 +107,8 @@ namespace SubtitleTools.Commands
 
             if (arr.Length == 1)
             {
-                var text = " " + arr.First().EscapeDot() + " ";
+                var escaped = arr.First().EscapeDot();
+                var text = " " + escaped + " ";
 
                 var tArr = Regex.Replace(text, @"([\?\.!…]+)[\s]+", "$1\n").SplitRegex(@"\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
                 var tLen = tArr.Length;
@@ -52,40 +125,42 @@ namespace SubtitleTools.Commands
                         for (int i = 1; i < tArr.Length; i++)
                         {
                             if (Regex.IsMatch(tArr[i].Trim(), @"^[\s\?\.!…]+$"))
-                            {
                                 list[0] += tArr[i].Trim();
-                            }
                             else
-                            {
                                 list[0] += " " + tArr[i].Trim();
-                            }
                         }
                     }
                     else if (noneSingle.Length > 1)
                     {
-                        int fIdx = Array.IndexOf(tArr, noneSingle[0]);
-                        int sIdx = Array.IndexOf(tArr, noneSingle[1]);
-
                         list = new string[2];
                         list[0] = string.Empty;
                         list[1] = string.Empty;
 
-                        for (int i = 0; i < tArr.Length; i++)
+                        if (noneSingle.Length == 2)
                         {
-                            if (i <= fIdx)
-                            {
-                                list[0] += " " + tArr[i].Trim();
-                            }
-                            if (i >= sIdx)
-                            {
-                                list[1] += " " + tArr[i].Trim();
-                            }
+                            list[0] = tArr[0].Trim();
+                            list[1] = tArr[1].Trim();
                         }
+                        else
+                        {
+                            var cutPoint = FindCutPoint(escaped);
+                            int len = 0;
 
-                        list[0] = list[0].Trim();
-                        list[1] = list[1].Trim();
+                            for (int i = 0; i < tArr.Length; i++)
+                            {
+                                var temp = tArr[i].Trim();
+                                len += (len == 0 ? 0 : 1) + temp.Length;
+
+                                if (len < cutPoint)
+                                    list[0] += " " + temp;
+                                else
+                                    list[1] += " " + temp;
+                            }
+
+                            list[0] = list[0].Trim();
+                            list[1] = list[1].Trim();
+                        }
                     }
-                    
                 }
             }
 

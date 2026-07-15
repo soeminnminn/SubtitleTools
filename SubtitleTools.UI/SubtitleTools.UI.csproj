@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>disable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
@@ -10,6 +10,8 @@
     <Company>S16 Co. Ltd.</Company>
     <Copyright>Copyright © 2023 The Open Source Project</Copyright>
     <Title>Subtitle Tools</Title>
+    <UseWindowsForms>True</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -24,22 +26,13 @@
 	<Resource Include="icon.ico" />
 	<Resource Include="Resources\*.png" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="mpv" Version="0.28.2" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SubtitleTools\SubtitleTools.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="libmpv\Win32\mpv-1.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="libmpv\x64\mpv-1.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="libmpv-2.dll" CopyToOutputDirectory="PreserveNewest" Link="libmpv-2.dll" />
+	</ItemGroup>
 
 </Project>

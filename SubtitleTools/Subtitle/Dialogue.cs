@@ -190,51 +190,6 @@ namespace SubtitleTools
         #endregion
 
         #region Methods
-        private string FixQuote(string value)
-        {
-            string str = value;
-
-            if (str.IndexOf('"') > -1)
-            {
-                int halfLen = (int)Math.Ceiling((decimal)(str.Length / 2));
-                int idx = str.IndexOf('"');
-
-                int nextIdx = str.IndexOf('"', idx + 1);
-                if (nextIdx == -1)
-                {
-                    nextIdx = str.LastIndexOf('"');
-                }
-
-                if (nextIdx > idx + 2 && str[nextIdx - 1] == ' ')
-                {
-                    var len = str.Length;
-                    var temp = str.Substring(0, nextIdx - 1) + str.Substring(nextIdx, len - nextIdx);
-
-                    if (idx > 2 && str[idx - 1] != ' ')
-                    {
-                        len = len - 1;
-                        temp = str.Substring(0, idx) + " " + str.Substring(idx, len - idx);
-                    }
-
-                    str = temp;
-                }
-                else if (idx > halfLen && str[idx - 1] == ' ')
-                {
-                    var len = str.Length;
-                    var temp = str.Substring(0, idx - 1) + str.Substring(idx, len - idx);
-                    str = temp;
-                }
-                else if (idx > 1 && str[idx - 1] != ' ')
-                {
-                    var len = str.Length;
-                    var temp = str.Substring(0, idx) + " " + str.Substring(idx, len - idx);
-                    str = temp;
-                }
-            }
-
-            return str;
-        }
-
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "", params string[] propertyNames)
         {
             if (PropertyChanged != null)
@@ -248,6 +203,22 @@ namespace SubtitleTools
             }
         }
 
+        private bool IsHasTokenType(TokenTypes srcType, TokenTypes findType)
+        {
+            var enumArr = Enum.GetValues(typeof(TokenTypes)) as TokenTypes[];
+
+            foreach (var e in enumArr)
+            {
+                if (e == TokenTypes.EMPTY || e == TokenTypes.TAGS || e == TokenTypes.ANY_DLG || e == TokenTypes.ALL)
+                    continue;
+
+                if (findType.HasFlag(e) && srcType.HasFlag(e))
+                    return true;
+            }
+
+            return false;
+        }
+
         public string ToString(TokenTypes options)
         {
             if (tokens.Length == 0) return string.Empty;
@@ -256,17 +227,12 @@ namespace SubtitleTools
             {
                 if ((options & TokenTypes.NEW_LINE) == tok.TokenType)
                     return "\n";
-                else if ((options & TokenTypes.DIALOUGE) == tok.TokenType)
-                    return this.FixQuote($"{tok}\b");
-                else if ((options & tok.TokenType) == tok.TokenType)
+                else if (IsHasTokenType(tok.TokenType, options))
                     return $"{tok}";
                 else
                     return string.Empty;
 
             }).Join("")
-                .ReplaceRegex("[\\s][\b]", "")
-                .ReplaceRegex("[\b]([^\"\\.\\?!])", " $1")
-                .ReplaceRegex("[\b]", "")
                 .ReplaceRegex(@"[\n]{2,}", "\n")
                 .ReplaceRegex(@"[ ]{2,}", " ");
 

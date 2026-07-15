@@ -345,6 +345,7 @@ namespace SubtitleTools.UI.ViewModels
             }
 
             IsProcessing = false;
+            EditDialogIndex = 0;
             FileLoaded?.Invoke(this, EventArgs.Empty);
         }
 

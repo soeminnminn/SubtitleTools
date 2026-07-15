@@ -199,9 +199,14 @@ namespace SubtitleTools
             get => new StringLiteral(string.Empty);
         }
 
-        public string Value
+        public string Text
         {
             get => this._value;
+        }
+
+        public string Value
+        {
+            get => this._value.Substring(1, this._value.Length - 2);
         }
 
         public int Index

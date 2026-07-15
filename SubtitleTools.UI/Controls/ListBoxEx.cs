@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,9 +11,12 @@ using System.Windows.Media;
 
 namespace SubtitleTools.UI.Controls
 {
+    [TemplatePart(Name = PART_ScrollHost, Type = typeof(ScrollViewer))]
     public class ListBoxEx : ListBox
     {
         #region Variables
+        private const string PART_ScrollHost = "PART_ScrollHost";
+
         private ScrollViewer scrollViewer = null;
         #endregion
 
@@ -27,6 +32,16 @@ namespace SubtitleTools.UI.Controls
         #endregion
 
         #region Methods
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            if (GetTemplateChild(PART_ScrollHost) is ScrollViewer scrollViewer)
+            {
+                this.scrollViewer = scrollViewer;
+            }
+        }
+
         protected override DependencyObject GetContainerForItemOverride()
         {
             return new ListBoxExItem();
@@ -35,11 +50,6 @@ namespace SubtitleTools.UI.Controls
         protected override bool IsItemItsOwnContainerOverride(object item)
         {
             return item is ListBoxExItem;
-        }
-
-        public new DependencyObject GetTemplateChild(string childName)
-        {
-            return base.GetTemplateChild(childName);
         }
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject element) where T : DependencyObject
@@ -64,6 +74,14 @@ namespace SubtitleTools.UI.Controls
                 scrollViewer = childs.FirstOrDefault();
             }
             return scrollViewer;
+        }
+
+        public void ScrollToTop()
+        {
+            if (this.scrollViewer != null)
+            {
+                this.scrollViewer.ScrollToTop();
+            }
         }
         #endregion
     }

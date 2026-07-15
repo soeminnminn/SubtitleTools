@@ -307,8 +307,8 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     
-                    <Grid Background="Black">
-                        
+                    <Grid>
+                        <ctrl:MpvPlayer />
                     </Grid>
 
                     <Border Grid.Row="1" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="1,0,1,1">
