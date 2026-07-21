@@ -1,0 +1,12 @@
+{
+  "apiVersion": 1,
+  "name": "Cleaner",
+  "description": "Clean anything.",
+  "version": "1.0.0",
+  "author": "Soe Minn Minn",
+  "url": "https://github.com/soeminnminn/SubtitleTools/tree/master/CleanerSE5",
+  "menu": "Tools",
+  "minSeVersion": "5.0.0",
+  "runtime": "dotnet",
+  "entry": "Cleaner.dll"
+}

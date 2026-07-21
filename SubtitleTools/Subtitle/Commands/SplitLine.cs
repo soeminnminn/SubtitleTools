@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SubtitleTools.Commands
@@ -12,21 +10,21 @@ namespace SubtitleTools.Commands
         #endregion
 
         #region Methods
-        private static int FindCutPoint(string text)
+        private static int FindCutPoint(string text, int maxLineLen)
         {
             if (string.IsNullOrEmpty(text)) return -1;
-            if (text.Length < ToolsConstants.MaxLineLength) return -1;
+            if (text.Length < maxLineLen) return -1;
 
             List<string> cutChars = new List<string>() { ". ", "? ", "! ", "… " };
 
             int halfIdx = (int)Math.Floor(text.Length * 0.5);
 
-            if (halfIdx < ToolsConstants.MaxLineLength)
+            if (halfIdx < maxLineLen)
             {
                 string temp = text.EscapeDot();
                 temp = Regex.Replace(temp, @"([^\s]),([^\s])", "$1\u05A5$2");
 
-                for (var i = halfIdx; i < ToolsConstants.MaxLineLength && i < temp.Length; i++)
+                for (var i = halfIdx; i < maxLineLen && i < (temp.Length - 1); i++)
                 {
                     var check = temp[i].ToString() + temp[i + 1].ToString();
                     if (cutChars.Contains(check))
@@ -36,7 +34,7 @@ namespace SubtitleTools.Commands
                 }
 
                 int spaceCount = 0;
-                int fromEnd = temp.Length - ToolsConstants.MaxLineLength;
+                int fromEnd = temp.Length - maxLineLen;
                 for (var i = halfIdx; i > fromEnd && i > 0; i--)
                 {
                     if (temp[i] == ' ')
@@ -114,8 +112,15 @@ namespace SubtitleTools.Commands
                 var tLen = tArr.Length;
 
                 var noneSingle = tArr.Where(x => !Regex.IsMatch(x.Trim(), @"^[\s\?\.!…¶♪♫\""]+$")).ToArray();
+                var cutPoint = FindCutPoint(escaped, ToolsConstants.MaxLineLength);
 
-                if (tLen > 1)
+                if (tLen == 1 && cutPoint > 0)
+                {
+                    list = new string[2];
+                    list[0] = escaped.Substring(0, cutPoint).Trim();
+                    list[1] = escaped.Substring(cutPoint).Trim();
+                }
+                else if (tLen > 1)
                 {
                     if (noneSingle.Length == 1)
                     {
@@ -143,9 +148,7 @@ namespace SubtitleTools.Commands
                         }
                         else
                         {
-                            var cutPoint = FindCutPoint(escaped);
                             int len = 0;
-
                             for (int i = 0; i < tArr.Length; i++)
                             {
                                 var temp = tArr[i].Trim();

@@ -8,7 +8,7 @@ namespace SubtitleTools
         #region Variables
         internal static readonly byte[] UTF8_BOM = new byte[] { 0xef, 0xbb, 0xbf };
 
-        internal const int MaxLineLength = 40;
+        internal const int MaxLineLength = 43;
         internal const int MaxLineCount = 2;
 
         internal static readonly string[] specialChars = new string[] {
@@ -22,7 +22,7 @@ namespace SubtitleTools
             ":", ",", ".", "?"
         };
 
-        internal const string singleQuotes = "`\u0027\u0060\u00B4\u02B9\u02BB\u02BC\u02BD\u02BE\u02BF\u02C8\u02CA\u02CB\u0300\u0301\u0309\u030D\u031B\u0312\u0313\u0314\u0315\u0340\u0341\u0343\u0351\u0357\u0374\u0384\u0559\u055A\u055B\u055D\u1FEF\u1FFD\u1FFE\u2018\u2019\u201B\u2032";
+        internal const string singleQuotes = "\u0027\u0060\u00B4\u02B9\u02BB\u02BC\u02BD\u02BE\u02BF\u02C8\u02CA\u02CB\u0300\u0301\u0309\u030D\u031B\u0312\u0313\u0314\u0315\u0340\u0341\u0343\u0351\u0357\u0374\u0384\u0559\u055A\u055B\u055D\u1FEF\u1FFD\u1FFE\u2018\u2019\u201B\u2032";
         internal const string doubleQuotes = "\u0022\u02BA\u02DD\u02EE\u030B\u030E\u030F\u201C\u201D\u201F\u2033";
         internal const string commas = "\u002C\u00B8\u02CF\u02DB\u0316\u0317\u031C\u0321\u0322\u0326\u0327\u0328\u0329\u0339\u0375\u201A";
         internal const string semicolons = "\u003B\u037E";
@@ -50,10 +50,15 @@ namespace SubtitleTools
             new ReplaceCondition(new Regex(@"([:\s\-])([VX]+)[Iil]{2}([:;!,\.\?\-\'\""`\s…”])"), "$1$2II$3"),
             new ReplaceCondition(new Regex(@"([:\s\-])([VX]+)[Iil]{3}([:;!,\.\?\-\'\""`\s…”])"), "$1$2III$3"),
 
+            // FBI
             new ReplaceCondition(new Regex(@"([:\s\-])(FB[Iil])([:;!\,\.\?\-\'\""`\s…”])"), "$1FBI$3"),
+            // CIA
             new ReplaceCondition(new Regex(@"([:\s\-])(C[Iil]A)([:;!\,\.\?\-\'\""`\s…”])"), "$1CIA$3"),
+            // AI
             new ReplaceCondition(new Regex(@"([:\s\-])([aA]\.?[Iil])([:;!\,\.\?\-\'\""`\s…”])"), "$1AI$3"),
+            // IO
             new ReplaceCondition(new Regex(@"([:\s\-])([Iil]\.?[oO])([:;!\,\.\?\-\'\""`\s…”])"), "$1IO$3"),
+            // HI
             new ReplaceCondition(new Regex(@"([:\s\-])(H[Il])([:;!\,\.\?\-\'\""`\s…”])"), "$1HI$3"),
 
             //new ReplaceCondition(new Regex(@"([\s\""\'``’])([A-Zl]{3,})([:;!,\.\?\-\'\""`\s…”])"), (Match m, string input) => 
@@ -65,6 +70,12 @@ namespace SubtitleTools
 
         internal static readonly ReplaceCondition[] typoFixRe = new ReplaceCondition[]
         {
+            //new ReplaceCondition(ToolsConstants.singleQuotes.ToCharArray(), "\'"),
+            //new ReplaceCondition(ToolsConstants.doubleQuotes.ToCharArray(), "\""),
+            //new ReplaceCondition(ToolsConstants.commas.ToCharArray(), ","),
+            //new ReplaceCondition(ToolsConstants.semicolons.ToCharArray(), ";"),
+            //new ReplaceCondition(ToolsConstants.colons.ToCharArray(), ":"),
+
             new ReplaceCondition(new Regex(@"([\s\""\'`’])0h([:;!,\.\?\-\'\""`\s…”])", RegexOptions.IgnoreCase), "$1Oh$2"),
 
             new ReplaceCondition(new Regex(@"([\.\?\-\'\""``’\s])M([rs]s?)[\s\.]{1,2}", RegexOptions.IgnoreCase), "$1M$2. "),
@@ -76,9 +87,22 @@ namespace SubtitleTools
 
             new ReplaceCondition(new Regex(@"([a-zA-Z])\s([:;!,\.\?\-\'…])"), "$1$2"),
 
-            new ReplaceCondition(new Regex(@"([^\""]+)\""([^\""]+)\s?$"), "$1 \"$2"),
-            new ReplaceCondition(new Regex(@"([^\""]+)\""([^\""]+)\"""), "$1 \"$2\""),
+            new ReplaceCondition(new Regex(@"([A-Za-z]+)(9\)')"), "$1ey"),
+            new ReplaceCondition(new Regex(@"([A-Za-z]+)(\)')"), "$1y"),
 
+            new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])1/4([:;!,\.\?\-\'\""`\s…])"), "$1¼$2"),
+            new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])1/2([:;!,\.\?\-\'\""`\s…])"), "$1½$2"),
+            new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])3/4([:;!,\.\?\-\'\""`\s…])"), "$1¾$2"),
+            new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])1/3([:;!,\.\?\-\'\""`\s…])"), "$1⅓$2"),
+            new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])2/3([:;!,\.\?\-\'\""`\s…])"), "$1⅔$2"),
+            new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])1/8([:;!,\.\?\-\'\""`\s…])"), "$1⅛$2"),
+            new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])3/8([:;!,\.\?\-\'\""`\s…])"), "$1⅜$2"),
+            new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])5/8([:;!,\.\?\-\'\""`\s…])"), "$1⅝$2"),
+            new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])7/8([:;!,\.\?\-\'\""`\s…])"), "$1⅞$2"),
+        };
+
+        internal static readonly ReplaceCondition[] apostropheFixRe = new ReplaceCondition[]
+        {
             new ReplaceCondition(new Regex(@"([Ii])['’`]m"), "I`m"),
             new ReplaceCondition(new Regex(@"([Mm]a)['’`]am"), "$1`am"),
             new ReplaceCondition(new Regex(@"([Hh]e|[Ii]|[Ii]t|[Ss]he|[Tt]hey|[Ww]e|[Ww]ho|[Yy]ou)['’`]ll"), "$1`ll"),
@@ -90,9 +114,6 @@ namespace SubtitleTools
             new ReplaceCondition(new Regex(@"([a-zA-Z]{2,})in['’`]"), "$1in`"),
             new ReplaceCondition(new Regex(@"([a-zA-Z\s]+)['’`](cause|bout|em)"), "$1`$2"),
             new ReplaceCondition(new Regex(@"([Cc])['’`]mon"), "$1`mon"),
-
-            new ReplaceCondition(new Regex(@"([A-Za-z]+)(9\)')"), "$1ey"),
-            new ReplaceCondition(new Regex(@"([A-Za-z]+)(\)')"), "$1y"),
         };
 
         internal static readonly Regex newLineRe = new Regex(@"\r\n|\r|\n");
@@ -122,9 +143,11 @@ namespace SubtitleTools
             new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\.([A-Z])\.([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4$5"),
             new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\.([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3$4"),
 
-            new ReplaceCondition(new Regex(@"([A-Z])\.([`']?s)([:;!,\.\?\-\'\""`\s…])"), "·$1·$2$3"),
+            new ReplaceCondition(new Regex(@"([A-Z])\.([`']?s)([:;!,\.\?\-\'\""`\s…])"), "$1·$2$3"),
 
-            new ReplaceCondition(new Regex(@"([0-9]+)\s?([AP])\s?\.\s?(M)([:;!,\.\?\-\'\""`\s…])", RegexOptions.IgnoreCase), "$1$2$3$4"),
+            new ReplaceCondition(new Regex(@"([0-9:]+)\s?([Aa][\s\.]*[Mm])([:;!,\.\?\-\'\""`\s…])"), "$1 AM$3"),
+            new ReplaceCondition(new Regex(@"([0-9:]+)\s?([Pp][\s\.]*[Mm])([:;!,\.\?\-\'\""`\s…])"), "$1 PM$3"),
+
             new ReplaceCondition(new Regex(@"([0-9]+)\s?\.\s?([0-9]+)"), "$1·$2")
         };
 

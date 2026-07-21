@@ -8,7 +8,7 @@ namespace SubtitleTools
     public class StringLiteralMatcher : IEnumerable<StringLiteral>, IEnumerator<StringLiteral>
     {
         #region Variables
-        private static readonly char[] quoteChars = { '"', '\'', '`' };
+        private static readonly char[] def_quoteChars = { '"', '\'', '`' };
 
         private readonly string _input;
         private readonly List<MatchData> _matches = new List<MatchData>();
@@ -16,26 +16,17 @@ namespace SubtitleTools
         private int[] _found = new int[2] { -1, -1 };
         #endregion
 
-        #region Constructor
+        #region Constructors
         public StringLiteralMatcher(string input)
         {
             this._input = input;
+            this.FindQuoteChar(input, def_quoteChars);
+        }
 
-            if (!string.IsNullOrEmpty(input))
-            {
-                for (int i = 0; i < input.Length; i++)
-                {
-                    char c = input[i];
-                    if (Array.IndexOf(quoteChars, c) > -1)
-                    {
-                        this._matches.Add(new MatchData() 
-                        {
-                            Value = c.ToString(),
-                            Index = i,
-                        });
-                    }
-                }
-            }
+        public StringLiteralMatcher(string input, char[] quoteChars)
+        {
+            this._input = input;
+            this.FindQuoteChar(input, quoteChars);
         }
         #endregion
 
@@ -62,6 +53,25 @@ namespace SubtitleTools
         #endregion
 
         #region Methods
+        private void FindQuoteChar(string input, char[] quotes)
+        {
+            if (!string.IsNullOrEmpty(input))
+            {
+                for (int i = 0; i < input.Length; i++)
+                {
+                    char c = input[i];
+                    if (Array.IndexOf(quotes, c) > -1)
+                    {
+                        this._matches.Add(new MatchData()
+                        {
+                            Value = c.ToString(),
+                            Index = i,
+                        });
+                    }
+                }
+            }
+        }
+
         public IEnumerator<StringLiteral> GetEnumerator()
         {
             return this;

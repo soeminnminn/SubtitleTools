@@ -143,22 +143,12 @@ namespace SubtitleTools
             new ReplaceCondition(new Regex(@"\\[Nn]"), "\n"),
             new ReplaceCondition(new Regex(@"\\h"), " "),
             new ReplaceCondition(new Regex(@"<\s?br\s?\/?>", RegexOptions.IgnoreCase), "\n"),
-            new ReplaceCondition(new Regex(@"[\r\n]+"), "\n"),
+            new ReplaceCondition(new Regex(@"(\r\n|\r|\n)+"), "\n"),
 
             new ReplaceCondition(new Regex(@"<\s?(\/?\s?[-A-Za-z0-9_]+[^>]*)\s?>"), (Match match, string input) => { return "<" + match.Groups[1].Value.Trim() + ">"; }),
             new ReplaceCondition(new Regex(@"<\/\s?([-A-Za-z0-9_]+)\s?>"), "</$1>"),
 
             new ReplaceCondition(urlRegex, "<url href=\"$1\">"),
-
-            new ReplaceCondition(" 1/4 ", " ¼ "),
-            new ReplaceCondition(" 1/2 ", " ½ "),
-            new ReplaceCondition(" 3/4 ", " ¾ "),
-            new ReplaceCondition(" 1/3 ", " ⅓ "),
-            new ReplaceCondition(" 2/3 ", " ⅔ "),
-            new ReplaceCondition(" 1/8 ", " ⅛ "),
-            new ReplaceCondition(" 3/8 ", " ⅜ "),
-            new ReplaceCondition(" 5/8 ", " ⅝ "),
-            new ReplaceCondition(" 7/8 ", " ⅞ "),
 
             // * xxx * | # xxx # | ¶ xxx ¶ --> ♪ xxx ♪
             new ReplaceCondition(new Regex(@"(^[\s]+[\*#][\s])|([\s][\*#¶][\s]+$)"), " ♪ "),
@@ -167,23 +157,8 @@ namespace SubtitleTools
             // xxx ♪ --> ♪ xxx ♪
             new ReplaceCondition(new Regex(@"^([^♪]+)([\s]+♪[\s])$"), " ♪ $1$2"),
 
-            new ReplaceCondition(ToolsConstants.singleQuotes.ToCharArray(), "\'"),
-            new ReplaceCondition(ToolsConstants.doubleQuotes.ToCharArray(), "\""),
-            new ReplaceCondition(ToolsConstants.commas.ToCharArray(), ","),
-            new ReplaceCondition(ToolsConstants.semicolons.ToCharArray(), ";"),
-            new ReplaceCondition(ToolsConstants.colons.ToCharArray(), ":"),
-
-            // I 'm --> I'm
-            new ReplaceCondition(new Regex(@"([a-zA-Z])[\s]+([\'])([a-zA-Z]+)"), "$1$2$3"),
-
             // -Hello --> - Hello
             new ReplaceCondition(new Regex(@"([\.\?\'\""\s])-([a-zA-Z])"), "$1- $2"),
-
-            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5·$6·$7·$8$9"),
-            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5·$6·$7$8"),
-            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5·$6$7"),
-            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4·$5$6"),
-            //new ReplaceCondition(new Regex(@"([\.\?\-\'\""`\s])([A-Z])\s?\.\s?([A-Z])\s?\.\s?([A-Z])([:;!,\.\?\-\'\""`\s…])"), "$1$2·$3·$4$5"),
 
             // 0: 000 --> 0∶000 | 
             new ReplaceCondition(new Regex(@"([0-9]+)\s?[∶:]\s?([0-9]+)"), "$1∶$2"),
@@ -413,7 +388,7 @@ namespace SubtitleTools
                         x = urlTagRe.Replace(x, "$1");
                         x = x.UnescapeDot();
 
-                        var stringLiteral = StringLiteralMatcher.From(x);
+                        var stringLiteral = new StringLiteralMatcher(x, new char[] { '"' });
 
                         int idx = 0;
                         foreach (var sl in stringLiteral)

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.6.33815.320
+# Visual Studio Version 18
+VisualStudioVersion = 18.8.12009.203
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleTools", "SubtitleTools\SubtitleTools.csproj", "{B12DAA07-704C-4B8B-A9F5-5E15483840A0}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubLib", "SubLib\SubLib.csproj", "{B933F785-4E9C-4C5B-BCC6-088723C59AC8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opportunity.AssLoader", "Opportunity.AssLoader\Opportunity.AssLoader.csproj", "{EDF96E38-A508-447C-8C90-00BF37EE1A91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanerSE5", "CleanerSE5\CleanerSE5.csproj", "{C99F20E0-1D92-408E-B830-26ED14D23F89}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SubtitleEditPlugins", "SubtitleEditPlugins", "{F7FF9CC3-7407-40DF-B83C-661AB7E8EE3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,9 +40,17 @@ Global
 		{B933F785-4E9C-4C5B-BCC6-088723C59AC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDF96E38-A508-447C-8C90-00BF37EE1A91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EDF96E38-A508-447C-8C90-00BF37EE1A91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C99F20E0-1D92-408E-B830-26ED14D23F89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C99F20E0-1D92-408E-B830-26ED14D23F89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C99F20E0-1D92-408E-B830-26ED14D23F89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C99F20E0-1D92-408E-B830-26ED14D23F89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B69FFC5E-5454-4B32-8E3A-912478E92266} = {F7FF9CC3-7407-40DF-B83C-661AB7E8EE3B}
+		{C99F20E0-1D92-408E-B830-26ED14D23F89} = {F7FF9CC3-7407-40DF-B83C-661AB7E8EE3B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C41FD3D5-1260-4811-9764-0A3DAA5A92AD}

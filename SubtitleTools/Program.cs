@@ -110,7 +110,8 @@ namespace SubtitleTools
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }
-        
+
+#if TEST
         static void Test()
         {
             //StringBuilder builder = new StringBuilder();
@@ -138,6 +139,7 @@ namespace SubtitleTools
                 Console.WriteLine($"[{sl.Current}]");
             }
         }
+#endif
 
         class ParsingTarget
         {

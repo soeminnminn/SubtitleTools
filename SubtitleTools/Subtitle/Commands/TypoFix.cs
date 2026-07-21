@@ -45,6 +45,14 @@ namespace SubtitleTools.Commands
 
                         token.Value = val;
                     }
+
+                    foreach (var rep in ToolsConstants.apostropheFixRe)
+                    {
+                        var val = " " + token.Value + " ";
+                        val = rep.Replace(val).Trim();
+
+                        token.Value = val;
+                    }
                 }
                 list.Add(token);
             }
