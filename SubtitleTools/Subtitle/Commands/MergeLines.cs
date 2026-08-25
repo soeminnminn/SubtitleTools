@@ -26,12 +26,12 @@ namespace SubtitleTools.Commands
 
             var text = dialogue.Text;
 
-            if (dialogue.LineCount > 1)
+            if (dialogue.LineCount > 1 && !ToolsConstants.songTagRe.IsMatch(text))
             {
                 text = ToolsConstants.mergeLinesRe.Replace(text, "$1 $2");
             }
 
-            var arr = text.SplitRegex(@"\r?\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            var arr = text.SimplifyNewLine().Split('\n').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
             dialogue.Text = string.Join("\n", arr);
         }
 

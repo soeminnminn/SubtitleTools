@@ -90,7 +90,7 @@ namespace SubtitleTools
         private static readonly Regex htmlEndTagRe = new Regex(@"^<\/([-A-Za-z0-9_]+)>");
         private static readonly Regex noneDlgRe = new Regex(@"^\([^\(]+\)|\[[^\]]+\]|\{[^\{\}]+\}$");
         private static readonly Regex beforeColonRe = new Regex(@"^([^:]+:)");
-        private static readonly Regex songTagRe = new Regex(@"[♪♫]+");
+        private static readonly Regex songTagRe = ToolsConstants.songTagRe;
         private static readonly Regex speratorCharsRe = new Regex(@"^[,\.!?:;…]+");
 
         private static readonly Regex urlRegex = new Regex(@"(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])", RegexOptions.IgnoreCase);
@@ -150,6 +150,9 @@ namespace SubtitleTools
 
             new ReplaceCondition(urlRegex, "<url href=\"$1\">"),
 
+            new ReplaceCondition("â™ª", "♪"),
+            new ReplaceCondition("â™«", "♫"),
+
             // * xxx * | # xxx # | ¶ xxx ¶ --> ♪ xxx ♪
             new ReplaceCondition(new Regex(@"(^[\s]+[\*#][\s])|([\s][\*#¶][\s]+$)"), " ♪ "),
             // ♪ xxx --> ♪ xxx ♪
@@ -158,7 +161,7 @@ namespace SubtitleTools
             new ReplaceCondition(new Regex(@"^([^♪]+)([\s]+♪[\s])$"), " ♪ $1$2"),
 
             // -Hello --> - Hello
-            new ReplaceCondition(new Regex(@"([\.\?\'\""\s])-([a-zA-Z])"), "$1- $2"),
+            new ReplaceCondition(new Regex(@"([:;!\,\.\?\-\'\""`\s…”])-\s?([a-zA-Z])"), "$1\n- $2"),
 
             // 0: 000 --> 0∶000 | 
             new ReplaceCondition(new Regex(@"([0-9]+)\s?[∶:]\s?([0-9]+)"), "$1∶$2"),
@@ -230,7 +233,7 @@ namespace SubtitleTools
 
         public static Token[] Tokenize(string input)
         {
-            string text = " " + input.Normalize(NormalizationForm.FormKC).Replace("\u002D", "").Trim().EscapeDot() + " ";
+            string text = " " + input.Normalize(NormalizationForm.FormKC).Trim().EscapeDot() + " ";
             foreach (var rep in preTokenReplace)
             {
                 text = rep.Replace(text);

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SubtitleTools.Commands
@@ -81,6 +83,35 @@ namespace SubtitleTools.Commands
             return closestSP;
         }
 
+        private string SplitBySongTag(string text)
+        {
+            if (ToolsConstants.songTagRe.IsMatch(text))
+            {
+                var lines = new List<string>();
+                var stringLiteral = new StringLiteralMatcher(text, new char[] { '♪', '♫' });
+
+                int idx = 0;
+                foreach (var sl in stringLiteral)
+                {
+                    if (sl.Index > 0)
+                    {
+                        int len = sl.Index - idx;
+                        var t = text.Substring(idx, len).Trim();
+                        lines.Add(t);
+                    }
+
+                    lines.Add(sl.Quote + " " + sl.Value.Trim() + " " + sl.Quote);
+                    idx = sl.Index + sl.Length;
+                }
+
+                var tl = text.Substring(idx).Trim();
+                lines.Add(tl);
+
+                return string.Join("\n", lines.ToArray());
+            }
+            return text;
+        }
+
         public bool CanExecute(ISubtitle subtitle)
         {
             return ((ICollection)subtitle).Count > 0;
@@ -96,9 +127,9 @@ namespace SubtitleTools.Commands
             if (dialogue.Tokens == null) return;
             if (dialogue.Tokens.Length == 0) return;
 
-            var dlgText = dialogue.Text;
+            var dlgText = this.SplitBySongTag(dialogue.Text);
 
-            var arr = dlgText.SplitRegex(@"\r?\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            var arr = dlgText.SimplifyNewLine().Split('\n').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
 
             var list = new string[arr.Length];
             Array.Copy(arr, list, arr.Length);

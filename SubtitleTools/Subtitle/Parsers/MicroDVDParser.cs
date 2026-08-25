@@ -21,7 +21,7 @@ namespace SubtitleTools
         {
             if (string.IsNullOrEmpty(input)) return false;
             input = input.Trim();
-            input = Utils.ReplaceNewLine(input);
+            input = Utils.SimplifyNewLine(input);
 
             Regex re = new Regex(@"\{(\d+)\}\{(\d+)\}([^\r\n]+)");
             Match match = re.Match(input);

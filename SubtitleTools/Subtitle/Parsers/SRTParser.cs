@@ -17,7 +17,7 @@ namespace SubtitleTools
         {
             if (string.IsNullOrEmpty(input)) return false;
             input = input.Trim();
-            input = Utils.ReplaceNewLine(input);
+            input = Utils.SimplifyNewLine(input);
 
             Regex re = new Regex(@"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) [-]{1,2}\s?> (\d{2}:\d{2}:\d{2},\d{3})\n");
             Match match = re.Match(input);

@@ -50,6 +50,9 @@ namespace SubtitleTools
             new ReplaceCondition(new Regex(@"([:\s\-])([VX]+)[Iil]{2}([:;!,\.\?\-\'\""`\s…”])"), "$1$2II$3"),
             new ReplaceCondition(new Regex(@"([:\s\-])([VX]+)[Iil]{3}([:;!,\.\?\-\'\""`\s…”])"), "$1$2III$3"),
 
+            // la
+            new ReplaceCondition(new Regex(@"([:\s\-])([Iil]a)([:;!\,\.\?\-\'\""`\s…”])"), "$1la$3"),
+
             // FBI
             new ReplaceCondition(new Regex(@"([:\s\-])(FB[Iil])([:;!\,\.\?\-\'\""`\s…”])"), "$1FBI$3"),
             // CIA
@@ -103,22 +106,26 @@ namespace SubtitleTools
 
         internal static readonly ReplaceCondition[] apostropheFixRe = new ReplaceCondition[]
         {
-            new ReplaceCondition(new Regex(@"([Ii])['’`]m"), "I`m"),
-            new ReplaceCondition(new Regex(@"([Mm]a)['’`]am"), "$1`am"),
-            new ReplaceCondition(new Regex(@"([Hh]e|[Ii]|[Ii]t|[Ss]he|[Tt]hey|[Ww]e|[Ww]ho|[Yy]ou)['’`]ll"), "$1`ll"),
-            new ReplaceCondition(new Regex(@"([Ii]|[Tt]hey|[Ww]e|[Ww]ho|[Ww]ould|[Yy]ou)['’`]ve"), "$1`ve"),
-            new ReplaceCondition(new Regex(@"([Tt]hey|[Ww]e|[Ww]ho|[Yy]ou)['’`]re"), "$1`re"),
-            new ReplaceCondition(new Regex(@"([a-zA-Z]{2,})['’`]s"), "$1`s"),
-            new ReplaceCondition(new Regex(@"([Aa]i|[Aa]re|[Cc]a|[Dd]id|[Dd]oes|[Dd]o|[Hh]ad|[Hh]as|[Hh]ave|[Ii]s|[Mm]ay|[Nn]eed|[Ss]ha|[Ww]as|[Ww]ere|[Ww]o)n['’`]t"), "$1n`t"),
-            new ReplaceCondition(new Regex(@"([Hh]e|[Ii]|[Ii]t|[Ss]he|[Tt]hey|[Ww]e|[Ww]ho|[Yy]ou)['’`]d"), "$1`d"),
-            new ReplaceCondition(new Regex(@"([a-zA-Z]{2,})in['’`]"), "$1in`"),
-            new ReplaceCondition(new Regex(@"([a-zA-Z\s]+)['’`](cause|bout|em)"), "$1`$2"),
-            new ReplaceCondition(new Regex(@"([Cc])['’`]mon"), "$1`mon"),
+            new ReplaceCondition(new Regex(@"[Ii]['’`](m|am|ll|ve|s|d)([:;!\,\.\?\-\'\""`\s…”])"), "I'$1$2"),
+            new ReplaceCondition(new Regex(@"([Hh]e|I|[Ii]t|[Ss]he|[Tt]hey|[Ww]e|[Ww]ho|[Yy]ou)['’`]ll([:;!\,\.\?\-\'\""`\s…”])"), "$1'll$2"),
+            new ReplaceCondition(new Regex(@"(I|[Tt]hey|[Ww]e|[Ww]ho|[Ww]ould|[Yy]ou)['’`]ve([:;!\,\.\?\-\'\""`\s…”])"), "$1've$2"),
+            new ReplaceCondition(new Regex(@"([Tt]hey|[Ww]e|[Ww]ho|[Yy]ou)['’`]re([:;!\,\.\?\-\'\""`\s…”])"), "$1're$2"),
+            new ReplaceCondition(new Regex(@"([Aa]i|[Aa]re|[Cc]a|[Dd]id|[Dd]oes|[Dd]o|[Hh]ad|[Hh]as|[Hh]ave|[Ii]s|[Mm]ay|[Nn]eed|[Ss]ha|[Ww]as|[Ww]ere|[Ww]o)n['’`]t([:;!\,\.\?\-\'\""`\s…”])"), "$1n't$2"),
+            new ReplaceCondition(new Regex(@"([Hh]e|I|[Ii]t|[Ss]he|[Tt]hey|[Ww]e|[Ww]ho|[Yy]ou)['’`]d([:;!\,\.\?\-\'\""`\s…”])"), "$1'd$2"),
+            
+            new ReplaceCondition(new Regex(@"([a-zA-Z]{2,})['’`]s([:;!\,\.\?\-\'\""`\s…”])"), "$1's$2"),
+            new ReplaceCondition(new Regex(@"([a-zA-Z]{2,})in['’`]([:;!\,\.\?\-\'\""`\s…”])"), "$1in'$2"),
+            new ReplaceCondition(new Regex(@"([a-zA-Z\s]+)['’`](cause|bout|em)([:;!\,\.\?\-\'\""`\s…”])"), "$1'$2$3"),
+            
+            new ReplaceCondition(new Regex(@"([Mm]a)['’`]am([:;!\,\.\?\-\'\""`\s…”])"), "$1'am$2"),
+            new ReplaceCondition(new Regex(@"([Cc])['’`]mon([:;!\,\.\?\-\'\""`\s…”])"), "$1'mon$2"),
         };
 
         internal static readonly Regex newLineRe = new Regex(@"\r\n|\r|\n");
         internal static readonly Regex trimWhitespaceStartRe = new Regex(@"^[\s]+");
         internal static readonly Regex trimWhitespaceEndRe = new Regex(@"[\s]+$");
+
+        internal static readonly Regex songTagRe = new Regex(@"[♪♫]+");
 
         internal static readonly string dotEscape = "·";
         internal static readonly ReplaceCondition[] escapeDotRe = new ReplaceCondition[]

@@ -186,7 +186,7 @@ namespace SubtitleTools
         public static string Replace(this string str, Regex regex, MatchEvaluator evaluator)
             => regex.Replace(str, evaluator);
 
-        public static string ReplaceNewLine(this string input, string replacement = "\n")
+        public static string SimplifyNewLine(this string input, string replacement = "\n")
         {
             if (!string.IsNullOrEmpty(input))
             {
